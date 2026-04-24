@@ -1,0 +1,2423 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>נומרולוגיה קבלית</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --sidebar-bg:    #12131A;
+      --sidebar-w:     260px;
+      --app-bg:        #F4F5F9;
+      --card-bg:       #FFFFFF;
+      --primary:       #5B5EA6;
+      --primary-light: #E8E9F8;
+      --accent:        #FF6B6B;
+      --text:          #1A1B2E;
+      --text-muted:    #6B7280;
+      --border:        #E5E7EB;
+      --radius:        12px;
+      --shadow:        0 2px 12px rgba(0,0,0,0.07);
+      --shadow-md:     0 4px 24px rgba(0,0,0,0.10);
+      --transition:    0.2s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: 'Heebo', 'Arial Hebrew', Arial, sans-serif;
+      background: var(--app-bg);
+      color: var(--text);
+      direction: rtl;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Layout ── */
+    #app {
+      display: flex;
+      height: 100vh;
+      flex-direction: row;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .sidebar-logo h1 {
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .sidebar-logo span {
+      display: block;
+      color: rgba(255,255,255,0.4);
+      font-size: 11px;
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    .sidebar-nav { padding: 12px 12px 0; }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.55);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: right;
+      transition: var(--transition);
+      margin-bottom: 2px;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+    .nav-btn.active { background: var(--primary); color: #fff; }
+    .nav-btn svg { flex-shrink: 0; opacity: 0.8; }
+
+    .sidebar-section-label {
+      padding: 16px 16px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .sidebar-profiles {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 12px;
+    }
+    .sidebar-profiles::-webkit-scrollbar { width: 4px; }
+    .sidebar-profiles::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-profiles::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+    .profile-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-bottom: 2px;
+    }
+    .profile-item:hover { background: rgba(255,255,255,0.06); }
+    .profile-item.active { background: rgba(91,94,166,0.3); }
+
+    .profile-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .profile-item-info { flex: 1; min-width: 0; }
+    .profile-item-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .profile-item-lp { font-size: 11px; color: rgba(255,255,255,0.35); }
+
+    .sidebar-footer {
+      padding: 12px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .btn-add-profile {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1.5px dashed rgba(255,255,255,0.2);
+      background: transparent;
+      color: rgba(255,255,255,0.5);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-add-profile:hover {
+      border-color: rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.05);
+    }
+
+    /* ── Main ── */
+    #main-content {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    #main-content::-webkit-scrollbar { width: 6px; }
+    #main-content::-webkit-scrollbar-track { background: transparent; }
+    #main-content::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+
+    #view-container {
+      flex: 1;
+      padding: 28px;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── Dashboard ── */
+    .page-header { margin-bottom: 24px; }
+    .page-header h2 { font-size: 24px; font-weight: 700; }
+    .page-header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+    .profiles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .profile-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1.5px solid transparent;
+      position: relative;
+    }
+    .profile-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .profile-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .profile-card-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .profile-card-title { flex: 1; }
+    .profile-card-title h3 { font-size: 16px; font-weight: 700; }
+    .profile-card-title span { font-size: 12px; color: var(--text-muted); }
+
+    .profile-card-numbers { display: flex; gap: 10px; }
+    .mini-num {
+      flex: 1;
+      text-align: center;
+      background: var(--app-bg);
+      border-radius: 8px;
+      padding: 8px 4px;
+    }
+    .mini-num .n { font-size: 20px; font-weight: 800; color: var(--primary); }
+    .mini-num .l { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    .profile-card-py {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .py-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .profile-card-actions {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: var(--transition);
+    }
+    .profile-card:hover .profile-card-actions { opacity: 1; }
+
+    .icon-btn {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: var(--app-bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+      font-size: 13px;
+    }
+    .icon-btn:hover { background: var(--accent); color: #fff; }
+
+    /* ── Profile Detail ── */
+    .profile-detail { max-width: 900px; margin: 0 auto; }
+
+    .detail-hero {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .detail-avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800;
+      color: #fff; flex-shrink: 0;
+    }
+    .detail-hero-info h2 { font-size: 22px; font-weight: 800; }
+    .detail-hero-info p  { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    .detail-hero-nums {
+      margin-right: auto;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .big-num { text-align: center; }
+    .big-num .val { font-size: 36px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .big-num .lbl { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .section-grid { display: grid; gap: 16px; margin-bottom: 20px; }
+    .section-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .section-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card h3 {
+      font-size: 13px; font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .card h3::before {
+      content: '';
+      display: inline-block;
+      width: 3px; height: 14px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .num-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .num-cell {
+      flex: 1; text-align: center;
+      background: var(--app-bg);
+      border-radius: 10px;
+      padding: 12px 8px;
+    }
+    .num-cell .digit-raw   { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+    .num-cell .digit-reduced { font-size: 26px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .num-cell .digit-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .py-display { display: flex; align-items: center; gap: 16px; }
+    .py-large {
+      width: 72px; height: 72px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .py-info h4 { font-size: 15px; font-weight: 700; }
+    .py-info p  { font-size: 13px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+
+    /* ── Peaks & Challenges paired ── */
+    .pc-pairs { display: flex; flex-direction: column; gap: 8px; }
+
+    .pc-pair {
+      display: grid;
+      grid-template-columns: 1fr 32px 1fr;
+      gap: 8px;
+      align-items: center;
+      background: var(--app-bg);
+      border-radius: 10px;
+      padding: 12px;
+      border: 2px solid transparent;
+      transition: var(--transition);
+    }
+    .pc-pair.current { border-color: var(--primary); }
+
+    .pc-side { text-align: center; }
+    .pc-side .pc-label { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pc-side .pc-num   { font-size: 28px; font-weight: 800; line-height: 1; }
+    .pc-side .pc-ages  { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+    .pc-side.peak      .pc-num { color: var(--primary); }
+    .pc-side.challenge .pc-num { color: var(--accent); }
+
+    .pc-vs {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .pc-current-label {
+      display: inline-block;
+      font-size: 10px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin-top: 4px;
+    }
+
+    .num-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .num-chip {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .num-chip.exists  { background: var(--primary); color: #fff; }
+    .num-chip.missing { background: var(--app-bg); color: #CBD5E0; border: 1.5px dashed #CBD5E0; }
+
+    .group-tag {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 12px; font-weight: 600;
+      margin: 3px 2px;
+    }
+    .group-tag.missing { background: #FFF0F0; color: #E53E3E; }
+
+    .harmony-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px; border-radius: 10px;
+      background: var(--app-bg);
+    }
+    .harmony-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .harmony-status.ok  { background: #48BB78; }
+    .harmony-status.bad { background: var(--accent); }
+
+    .career-text, .char-text {
+      font-size: 14px; color: var(--text); line-height: 1.7;
+    }
+
+    /* ── Workspace ── */
+    .workspace { height: 100%; display: flex; flex-direction: column; }
+
+    .workspace-toolbar {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .toolbar-label { font-size: 13px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+    .toolbar-input {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--app-bg);
+      width: 80px;
+      text-align: center;
+      direction: ltr;
+    }
+    .toolbar-input:focus { outline: none; border-color: var(--primary); }
+    .toolbar-sep { width: 1px; height: 24px; background: var(--border); }
+
+    .zoom-controls { display: flex; align-items: center; gap: 6px; }
+    .zoom-btn {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: var(--app-bg);
+      color: var(--text);
+      font-size: 16px; font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .zoom-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .zoom-level { font-size: 12px; color: var(--text-muted); min-width: 36px; text-align: center; }
+
+    .profile-toggles { display: flex; gap: 6px; flex-wrap: wrap; }
+    .profile-toggle {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      border: 1.5px solid transparent;
+      background: var(--app-bg);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px; font-weight: 500;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+    .profile-toggle.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .profile-toggle .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .timeline-wrap {
+      flex: 1;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      min-height: 200px;
+    }
+    .timeline-inner {
+      overflow-x: auto; overflow-y: auto;
+      height: 100%;
+      cursor: grab;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .timeline-inner::-webkit-scrollbar { display: none; }
+    .timeline-inner:active { cursor: grabbing; }
+
+    table.tl-table { border-collapse: collapse; user-select: none; }
+
+    .tl-name-cell {
+      position: sticky; right: 0;
+      background: var(--card-bg); z-index: 2;
+      padding: 0 14px; white-space: nowrap;
+      border-left: 2px solid var(--border);
+      min-width: 160px; max-width: 160px;
+    }
+    .tl-header-name {
+      height: 40px;
+      font-size: 11px; font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .tl-row-name { height: 52px; }
+    .tl-name-inner { display: flex; align-items: center; gap: 8px; }
+    .tl-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+      color: #fff; flex-shrink: 0;
+    }
+    .tl-name-text { font-size: 12px; font-weight: 600; color: var(--text); }
+    .tl-age-text  { font-size: 10px; color: var(--text-muted); }
+
+    .tl-year-header {
+      height: 40px; text-align: center;
+      font-size: 11px; font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap; padding: 0 2px;
+    }
+    .tl-year-header.today-col { color: var(--primary); font-weight: 700; }
+
+    .tl-cell {
+      height: 52px; text-align: center; vertical-align: middle;
+      padding: 3px;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .tl-py-block {
+      height: 44px; border-radius: 8px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-weight: 700; font-size: 15px;
+      transition: transform 0.1s;
+      cursor: default; position: relative;
+    }
+    .tl-py-block:hover { transform: scaleY(1.05); z-index: 1; }
+    .tl-py-block .tl-age { font-size: 9px; font-weight: 400; opacity: 0.7; line-height: 1; }
+    .tl-py-block.current-year { box-shadow: 0 0 0 2.5px #fff, 0 0 0 4px var(--primary); }
+    .tl-cell.future-col .tl-py-block { opacity: 0.65; }
+    .tl-cell.no-birth {
+      background: repeating-linear-gradient(-45deg,#F4F5F9 0px,#F4F5F9 4px,#ECEDF2 4px,#ECEDF2 8px);
+    }
+
+    /* ── Monthly timeline ── */
+    .tl-year-group {
+      text-align: center;
+      font-size: 11px; font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 2px;
+      background: var(--card-bg);
+    }
+    .tl-year-group.today-year { color: var(--primary); background: var(--primary-light); }
+
+    .tl-month-header {
+      height: 28px;
+      text-align: center;
+      font-size: 10px; font-weight: 500;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border);
+      padding: 0;
+      vertical-align: middle;
+    }
+    .tl-month-header.today-month { color: var(--primary); font-weight: 700; }
+
+    .tl-monthly-cell { padding: 2px 1px; }
+
+    .tl-py-block.birth-month-block {
+      border-right: 3px solid rgba(255,255,255,0.85);
+    }
+
+    /* ── Workspace search ── */
+    .ws-search-wrap { flex: 1; min-width: 180px; max-width: 320px; }
+    .ws-search {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--app-bg);
+      transition: var(--transition);
+    }
+    .ws-search:focus { outline: none; border-color: var(--primary); background: #fff; }
+    .ws-search::placeholder { color: var(--text-muted); }
+
+    /* ── Profile picker ── */
+    .ws-picker-wrap { position: relative; }
+    .ws-picker-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--app-bg);
+      color: var(--text);
+      font-family: inherit; font-size: 14px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: var(--transition);
+    }
+    .ws-picker-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .ws-picker-btn.has-selection { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+    .ws-picker-count { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+    .ws-picker-btn.has-selection .ws-picker-count { color: var(--primary); }
+
+    .ws-picker-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      width: 260px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 100;
+      display: flex; flex-direction: column;
+      max-height: 360px;
+    }
+    .ws-picker-search-wrap { padding: 10px 10px 6px; }
+    .ws-picker-search {
+      width: 100%; padding: 7px 10px;
+      border-radius: 7px;
+      border: 1.5px solid var(--border);
+      font-family: inherit; font-size: 13px;
+      color: var(--text); background: var(--app-bg);
+      box-sizing: border-box;
+    }
+    .ws-picker-search:focus { outline: none; border-color: var(--primary); }
+    .ws-picker-list { overflow-y: auto; flex: 1; padding: 4px 6px; }
+    .ws-picker-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px; color: var(--text);
+      transition: background 0.15s;
+    }
+    .ws-picker-item:hover { background: var(--app-bg); }
+    .ws-picker-item.selected { background: var(--primary-light); }
+    .ws-picker-item.disabled { opacity: 0.4; cursor: not-allowed; }
+    .ws-picker-item input[type=checkbox] { accent-color: var(--primary); width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; }
+    .ws-picker-item.disabled input[type=checkbox] { cursor: not-allowed; }
+    .ws-picker-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ws-picker-footer {
+      padding: 8px 10px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; color: var(--text-muted);
+    }
+    .ws-picker-clear-btn {
+      font-size: 12px; color: var(--primary); background: none; border: none;
+      cursor: pointer; font-family: inherit; padding: 2px 4px;
+    }
+    .ws-picker-clear-btn:hover { text-decoration: underline; }
+
+    .ws-chips { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+    .ws-chip {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 8px 4px 4px;
+      border-radius: 20px;
+      background: var(--primary-light);
+      border: 1px solid var(--primary);
+      font-size: 12px; color: var(--primary); font-weight: 500;
+    }
+    .ws-chip-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+    .ws-chip-remove {
+      background: none; border: none; cursor: pointer;
+      color: var(--primary); font-size: 15px; line-height: 1;
+      padding: 0 0 0 2px; font-family: inherit;
+      opacity: 0.7;
+    }
+    .ws-chip-remove:hover { opacity: 1; }
+
+    /* ── Spiral view ── */
+    .spiral-view { height: 100%; display: flex; flex-direction: column; }
+
+    .spiral-canvas-wrap {
+      flex: 1;
+      background: #050608;
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+    }
+    .spiral-canvas-wrap:active { cursor: grabbing; }
+
+    #spiral-canvas { position: absolute; inset: 0; display: block; }
+
+    .spiral-legend {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: 300px;
+      pointer-events: none;
+    }
+    .spiral-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.7);
+    }
+    .spiral-legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .spiral-info {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 13px;
+      min-width: 160px;
+      z-index: 2;
+    }
+    .spiral-info h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .spiral-info p  { color: rgba(255,255,255,0.6); font-size: 12px; }
+
+    .spiral-hint {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.22);
+      pointer-events: none;
+      font-family: Heebo, Arial;
+      z-index: 2;
+    }
+
+    .view-preset-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-family: inherit;
+      font-weight: 500;
+      border-radius: 6px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: transparent;
+      color: rgba(255,255,255,0.55);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .view-preset-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* ── Modal ── */
+    #modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    #modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 28px;
+      width: 420px; max-width: 95vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: modalIn 0.2s ease;
+    }
+    @keyframes modalIn {
+      from { opacity:0; transform:scale(0.95) translateY(-10px); }
+      to   { opacity:1; transform:scale(1) translateY(0); }
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 22px;
+    }
+    .modal-header h3 { font-size: 18px; font-weight: 700; }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 8px;
+      border: none; background: var(--app-bg); color: var(--text-muted);
+      cursor: pointer; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .modal-close:hover { background: var(--accent); color: #fff; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 13px; font-weight: 600;
+      color: var(--text-muted); margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%; padding: 10px 12px;
+      border-radius: 8px; border: 1.5px solid var(--border);
+      font-family: inherit; font-size: 14px;
+      color: var(--text); background: var(--app-bg);
+      transition: var(--transition);
+    }
+    .form-group input:focus {
+      outline: none; border-color: var(--primary); background: #fff;
+    }
+
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+    .form-actions { display: flex; gap: 10px; margin-top: 24px; }
+
+    .btn-primary {
+      flex: 1; padding: 11px;
+      border-radius: 8px; border: none;
+      background: var(--primary); color: #fff;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: var(--transition);
+    }
+    .btn-primary:hover { background: #4A4D8A; }
+
+    .btn-secondary {
+      padding: 11px 18px;
+      border-radius: 8px; border: 1.5px solid var(--border);
+      background: transparent; color: var(--text-muted);
+      font-family: inherit; font-size: 14px;
+      cursor: pointer; transition: var(--transition);
+    }
+    .btn-secondary:hover { background: var(--app-bg); }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 80px 20px; text-align: center;
+    }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+    .empty-state h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .empty-state p  { font-size: 14px; color: var(--text-muted); }
+
+    /* ── Tooltip ── */
+    #tooltip {
+      position: fixed; pointer-events: none; z-index: 200;
+      background: var(--text); color: #fff;
+      border-radius: 8px; padding: 8px 12px;
+      font-size: 12px; line-height: 1.5;
+      max-width: 200px; box-shadow: var(--shadow-md);
+      opacity: 0; transition: opacity 0.15s;
+    }
+    #tooltip.visible { opacity: 1; }
+
+    /* ── Utilities ── */
+    .text-muted { color: var(--text-muted); }
+    .mt-8  { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+
+    @media (max-width: 768px) {
+      #sidebar { width: 220px; min-width: 220px; }
+      #view-container { padding: 16px; }
+      .section-grid.cols-2 { grid-template-columns: 1fr; }
+      .detail-hero-nums { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      <h1>&#10022; נומרולוגיה קבלית</h1>
+      <span>מאגר פרופילים אישי</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" id="nav-dashboard" onclick="App.navigate('dashboard')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        כל הפרופילים
+      </button>
+      <button class="nav-btn" id="nav-workspace" onclick="App.navigate('workspace')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+        ציר זמן
+      </button>
+      <button class="nav-btn" id="nav-spiral" onclick="App.navigate('spiral')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 12 C12 12,18 6,18 12 C18 18,6 18,6 12 C6 6,12 4,15 7"/>
+        </svg>
+        ספירלה
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-add-profile" onclick="App.openModal()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        הוסף פרופיל
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main id="main-content">
+    <div id="view-container"></div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">פרופיל חדש</h3>
+      <button class="modal-close" onclick="App.closeModal()">&#10005;</button>
+    </div>
+    <form id="profile-form" onsubmit="App.submitProfile(event)">
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>שם פרטי</label>
+          <input type="text" id="f-firstName" placeholder="שרה" required>
+        </div>
+        <div class="form-group">
+          <label>שם משפחה</label>
+          <input type="text" id="f-lastName" placeholder="כהן" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>תאריך לידה</label>
+        <div class="form-row-3">
+          <div class="form-group" style="margin-bottom:0">
+            <input type="number" id="f-day" placeholder="יום" min="1" max="31" required>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <input type="number" id="f-month" placeholder="חודש" min="1" max="12" required>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <input type="number" id="f-year" placeholder="שנה" min="1900" max="2099" required>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">שמור פרופיל</button>
+        <button type="button" class="btn-secondary" onclick="App.closeModal()">ביטול</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+// ============================================================
+// numerology.js — מנוע חישובי נומרולוגיה קבלית
+// ============================================================
+
+const GEMATRIA = {
+  'א': 1,  'ב': 2,  'ג': 3,  'ד': 4,  'ה': 5,
+  'ו': 6,  'ז': 7,  'ח': 8,  'ט': 9,  'י': 10,
+  'כ': 20, 'ך': 20, 'ל': 30, 'מ': 40, 'ם': 40,
+  'נ': 50, 'ן': 50, 'ס': 60, 'ע': 70, 'פ': 80,
+  'ף': 80, 'צ': 90, 'ץ': 90, 'ק': 100,'ר': 200,
+  'ש': 300,'ת': 400
+};
+
+const MASTER_NUMBERS = new Set([11, 22, 33]);
+
+const PY_COLORS = {
+  0:  { bg: '#CBD5E0', text: '#2D3748' },
+  1:  { bg: '#FC8181', text: '#fff'    },
+  2:  { bg: '#63B3ED', text: '#fff'    },
+  3:  { bg: '#F6E05E', text: '#2D3748' },
+  4:  { bg: '#68D391', text: '#fff'    },
+  5:  { bg: '#F6AD55', text: '#fff'    },
+  6:  { bg: '#B794F4', text: '#fff'    },
+  7:  { bg: '#4299E1', text: '#fff'    },
+  8:  { bg: '#FC9F5B', text: '#fff'    },
+  9:  { bg: '#48BB78', text: '#fff'    },
+  11: { bg: '#E9D8FD', text: '#553C9A' },
+  22: { bg: '#FEFCBF', text: '#744210' },
+  33: { bg: '#FED7D7', text: '#822727' },
+};
+
+function reduceNumber(n) {
+  n = Math.abs(Math.round(n));
+  if (n === 0) return 0;
+  while (n > 9 && !MASTER_NUMBERS.has(n)) {
+    n = String(n).split('').reduce((s, d) => s + parseInt(d), 0);
+  }
+  return n;
+}
+
+// צמצום לספרה בודדת 1-9 — ללא שמירת מאסטר (לשנה/חודש אישי בלבד)
+function reducePY(n) {
+  n = Math.abs(Math.round(n));
+  if (n === 0) return 0;
+  while (n > 9) {
+    n = String(n).split('').reduce((s, d) => s + parseInt(d), 0);
+  }
+  return n;
+}
+
+function reduceYear(year) {
+  const sum = String(year).split('').reduce((s, d) => s + parseInt(d), 0);
+  return reduceNumber(sum);
+}
+
+function calcNameValue(name) {
+  const clean = name.replace(/[^א-ת]/g, '');
+  if (!clean) return 0;
+  const total = [...clean].reduce((s, ch) => s + (GEMATRIA[ch] || 0), 0);
+  return reduceNumber(total);
+}
+
+function calcLifePath(day, month, year) {
+  const d = reduceNumber(day);
+  const m = reduceNumber(month);
+  const y = reduceYear(year);
+  return reduceNumber(d + m + y);
+}
+
+function calcPYForBirthdayYear(birthDay, birthMonth, calYear) {
+  const d = reduceNumber(birthDay);
+  const m = reduceNumber(birthMonth);
+  const y = birthMonth <= 6 ? reduceYear(calYear) : reduceYear(calYear + 1);
+  return reducePY(d + m + y);  // שנה אישית תמיד 1-9
+}
+
+function getCurrentPY(birthDay, birthMonth, checkDate) {
+  checkDate = checkDate || new Date();
+  const cy = checkDate.getFullYear();
+  const birthdayThisYear = new Date(cy, birthMonth - 1, birthDay);
+  const passed = checkDate >= birthdayThisYear;
+  const lastBirthdayYear = passed ? cy : cy - 1;
+  return calcPYForBirthdayYear(birthDay, birthMonth, lastBirthdayYear);
+}
+
+function calcPersonalMonth(personalYear, currentMonth) {
+  return reducePY(personalYear + currentMonth);  // חודש אישי תמיד 1-9
+}
+
+function calcPeaks(day, month, year) {
+  const d  = reduceNumber(day);
+  const m  = reduceNumber(month);
+  const y  = reduceYear(year);
+  const lp = calcLifePath(day, month, year);
+  return {
+    peak1: reduceNumber(d + m),
+    peak2: reduceNumber(d + y),
+    peak3: reduceNumber(d + lp),
+    peak4: reduceNumber(m + y),
+  };
+}
+
+function calcChallenges(day, month, year) {
+  const d  = reduceNumber(day);
+  const m  = reduceNumber(month);
+  const y  = reduceYear(year);
+  const c1 = Math.abs(d - m);
+  const c2 = Math.abs(d - y);
+  const c3 = Math.abs(c1 - c2);
+  const c4 = Math.abs(m - y);
+  return {
+    ch1: reduceNumber(c1),
+    ch2: reduceNumber(c2),
+    ch3: reduceNumber(c3),
+    ch4: reduceNumber(c4),
+  };
+}
+
+function getPeakAges(lifePathNum) {
+  let lp = lifePathNum;
+  if (lp === 11) lp = 2;
+  if (lp === 22) lp = 4;
+  if (lp === 33) lp = 6;
+  const s = 27 - lp;
+  return [
+    { start: s,      end: s + 8  },
+    { start: s + 9,  end: s + 17 },
+    { start: s + 18, end: s + 26 },
+    { start: s + 27, end: s + 35 },
+  ];
+}
+
+function getExistingMissing(day, month, year) {
+  const str = String(day) + String(month) + String(year);
+  const existing = new Set();
+  for (const ch of str) {
+    const n = parseInt(ch);
+    if (n >= 1 && n <= 9) existing.add(n);
+  }
+  const missing = [1,2,3,4,5,6,7,8,9].filter(n => !existing.has(n));
+  return { existing: [...existing].sort((a,b)=>a-b), missing };
+}
+
+const HARMONY_GROUPS = [
+  [1,2,3],[4,5,6],[7,8,9],
+  [1,4,7],[2,5,8],[3,6,9],
+  [1,5,9],[3,5,7]
+];
+
+function normalizeForGroup(n) {
+  if (n === 11) return 2;
+  if (n === 22) return 4;
+  if (n === 33) return 6;
+  return n;
+}
+
+function shareGroup(a, b) {
+  const na = normalizeForGroup(a);
+  const nb = normalizeForGroup(b);
+  return HARMONY_GROUPS.some(g => g.includes(na) && g.includes(nb));
+}
+
+function checkHarmony(day, month, year, firstName) {
+  const d    = reduceNumber(day);
+  const lp   = calcLifePath(day, month, year);
+  const name = calcNameValue(firstName);
+  const nums = [
+    { label: 'יום',       val: d    },
+    { label: 'שביל גורל', val: lp   },
+    { label: 'שם פרטי',  val: name },
+  ];
+  const combos = [[0,1,2],[0,2,1],[1,2,0]];
+  for (const [i,j,k] of combos) {
+    const a = nums[i].val, b = nums[j].val, c = nums[k].val;
+    if (shareGroup(a, b)) {
+      const nc = normalizeForGroup(c);
+      const na = normalizeForGroup(a);
+      const nb = normalizeForGroup(b);
+      const diff = Math.min(Math.abs(nc - na), Math.abs(nc - nb));
+      if (diff <= 2) {
+        return { valid: true, pair: [nums[i], nums[j]], alone: nums[k], diff };
+      }
+    }
+  }
+  return { valid: false, pair: [], alone: null, diff: null };
+}
+
+function buildPYTimeline(birthDay, birthMonth, birthYear, fromYear, toYear) {
+  const result = [];
+  const today = new Date();
+  for (let yr = fromYear; yr <= toYear; yr++) {
+    const age = yr - birthYear;
+    if (age < 0) { result.push({ birthdayYear: yr, pyNum: null, age }); continue; }
+    const pyNum = calcPYForBirthdayYear(birthDay, birthMonth, yr);
+    const isCurrent = (() => {
+      const bday     = new Date(yr, birthMonth - 1, birthDay);
+      const bdayNext = new Date(yr + 1, birthMonth - 1, birthDay);
+      return today >= bday && today < bdayNext;
+    })();
+    result.push({ birthdayYear: yr, pyNum, age, isCurrent });
+  }
+  return result;
+}
+
+// ציר זמן חודשי — כל חודש מחזיר את השנה האישית הפעילה
+function buildMonthlyTimeline(birthDay, birthMonth, birthYear, fromYear, toYear) {
+  const result = [];
+  const today   = new Date();
+  const todayYr = today.getFullYear();
+  const todayMo = today.getMonth() + 1;
+
+  for (let yr = fromYear; yr <= toYear; yr++) {
+    for (let mo = 1; mo <= 12; mo++) {
+      const ageYears  = yr - birthYear;
+      const beforeBirth = ageYears < 0 || (ageYears === 0 && mo < birthMonth);
+
+      if (beforeBirth) {
+        result.push({ year: yr, month: mo, pyNum: null, isCurrent: false, isBirthMonth: false });
+        continue;
+      }
+
+      // מחצית החודש כתאריך בדיקה
+      const checkDate  = new Date(yr, mo - 1, 15);
+      const pyNum      = getCurrentPY(birthDay, birthMonth, checkDate);
+      const isCurrent  = yr === todayYr && mo === todayMo;
+      const isBirthMonth = mo === birthMonth;
+
+      result.push({ year: yr, month: mo, pyNum, isCurrent, isBirthMonth });
+    }
+  }
+  return result;
+}
+
+function calcFullProfile(p) {
+  const { birthDay: d, birthMonth: m, birthYear: y, firstName, lastName } = p;
+  const today      = new Date();
+  const lp         = calcLifePath(d, m, y);
+  const dayNum     = reduceNumber(d);
+  const monthNum   = reduceNumber(m);
+  const yearNum    = reduceYear(y);
+  const pyNow      = getCurrentPY(d, m, today);
+  const pmNow      = calcPersonalMonth(pyNow, today.getMonth() + 1);
+  const peaks      = calcPeaks(d, m, y);
+  const challenges = calcChallenges(d, m, y);
+  const peakAges   = getPeakAges(lp);
+  const { existing, missing } = getExistingMissing(d, m, y);
+  const nameVal      = calcNameValue(firstName + lastName);
+  const firstNameVal = calcNameValue(firstName);
+  const harmony      = checkHarmony(d, m, y, firstName);
+  const age = today.getFullYear() - y -
+    (today < new Date(today.getFullYear(), m - 1, d) ? 1 : 0);
+  return {
+    lp, dayNum, monthNum, yearNum,
+    pyNow, pmNow,
+    peaks, challenges, peakAges,
+    existing, missing,
+    nameVal, firstNameVal, harmony,
+    age,
+  };
+}
+
+const NUMBER_MEANINGS = {
+  1: 'דעתן, מנהל, עצמאי, מסודר ומאורגן, לא אוהב לקבל הוראות, כושר החלטה וכוח רצון, קשיחות וביטחון עצמי, אנליטי, חייב להיות בשליטה.',
+  2: 'ריגושים, מגע פיזי, חיבוקים ונשיקות זוגיות. טובים בפתרון בעיות לאחרים. שיריון חיצוני ורכים מבפנים. חשוב מאוד הרגש, דימיונות ויכולת מניפולציה רגשית.',
+  3: 'רומנטיקה, יצירתיות, כושר ביטוי, שורד, אוהבי צדק וחברה. מרוממים את הזולת, כריזמה. נוטים להיות מפוזרים, רוח ילדותית ומרוממת.',
+  4: 'עקשנים, ביקורתיים ושיפוטיים, שאפתנים ופרפקציוניסטים. אוהבי חומר, משמעת וניקיון. לא אוהבים שינויים, חיים במסגרות. יכולת אלתור גבוהה.',
+  5: 'חופש ומרחב, רצון להיות משוחרר, נסיעות וטיולים. לשון חלקה וקסם אישי, יופי ואסתטיקה. מוחצנים ובעלי רצון להיות נערצים.',
+  6: 'משפחתיים, לעיתים ירגישו בודדים גם בין חברים. הרמוניים ואוהבי שלום, נתינה ואנרגיה חמה. מיניים מאוד, טוב לעמוד על במה.',
+  7: 'רוח, טיפול והדרכה. שקט נפשי בכדי להצליח. חרדות, יכולת ניהול גבוהה. רוחניים, אינטואיציה גבוהה. אינם אוהבים את אור הזרקורים.',
+  8: 'אנשי המדים, סמכות, חוק ומשפט. אינטואיציה גבוהה, חשיבה יסודית. מספר של שפע, יכולת לעשות כל שירצה. איזון בין חומר ורוח.',
+  9: 'וורבלי, פיו כלי נשק, פתיל קצר. רצון להעביר מסר ולחנך. כושר שכנוע, אומץ לב ויושר אישי. נדיבים, יכולת נבואית.',
+  11: 'מספר מסטאר — 11. אנרגיה גבוהה מאוד של ה-2, רגישות ואינטואיציה יוצאי דופן.',
+  22: 'מספר מסטאר — 22. אנרגיה גבוהה מאוד של ה-4, יכולת בניה ומימוש חזון גדול.',
+  33: 'מספר מסטאר — 33. אנרגיה גבוהה מאוד של ה-6, נתינה ואהבה ללא תנאי.',
+};
+
+const CAREER_INFO = {
+  1: 'מנהלי עסקים, יזמות, הובלה והדרכת קבוצות ופרויקטים, ייעוץ ארגוני, מפיקים, אימון אישי ועסקי, קריירה ביטחונית.',
+  2: 'ייעוץ חינוכי, עבודה סוציאלית, אמנות, נוער בסיכון, פסיכולוגיה, ריפוי בעיסוק, אימון אישי, טיפול במגע, ליווי כלות, טיפולי יופי.',
+  3: 'משחק, מוסיקה, אומנות, תקליטנות, מחול, שדרנות, דיבוב, סטנד אפ, יחסי ציבור, דוברות, הפקות אירועים, הדרכת טיולים.',
+  4: 'ראיית חשבון, עריכת דין, פיתוח תוכנה, ייעוץ מס, ייעוץ השקעות, בנקאות, עסקי מקרקעין, הנדסת בניין, עיצוב פנים ואדריכלות.',
+  5: 'קופירייטינג, שיווק, דוברות, כתיבה, קולנוע, פרסום, תיירות ונסיעות, מסעדנות, יחסי ציבור, פוליטיקה, ענף הטיפוח.',
+  6: 'עבודה סוציאלית, הוראה וחינוך, עבודה קהילתית, סיעוד, אירוח, ייעוץ וטיפול משפחתי, מערכות ציבוריות, מלכרים.',
+  7: 'מחקר דתות ותרבויות, פילוסופיה, מחקר רפואי, מחקר ופיתוח בהייטק, רפואה משלימה, פסיכולוגיה, מיסטיקה ורוחניות.',
+  8: 'הנהלת חשבונות, בנקאות, כלכלה, ייעוץ השקעות, ייעוץ ארגוני, מינוף נדלן, עריכת דין, אסטרטגים, מערכות הביטחון.',
+  9: 'יזמות וחדשנות בהקשר שינוי חברתי, חינוך והוראה, ניהול משאבי אנוש, עבודה סוציאלית, ניהול מלכרים, פסיכולוגיה.',
+  11: 'ייעוץ, טיפול, מדיום, עבודה רוחנית, חינוך, אמנות.',
+  22: 'ניהול פרויקטים גדולים, ארכיטקטורה, הנדסה, יזמות גדולה.',
+  33: 'ריפוי, חינוך, עבודה הומניטרית, אמנות טיפולית.',
+};
+
+const YEAR_INFO = {
+  1:  { title: 'שנה 1 — התחלות חדשות',        desc: 'זמן לפתוח דפים חדשים, ליזום ולהוביל. אנרגיה גבוהה של התחלה.' },
+  2:  { title: 'שנה 2 — רגש ומערכות יחסים',   desc: 'שנה של מצבים רגשיים. מומלצת להריון ולידה. עדינות ושיתוף פעולה.' },
+  3:  { title: 'שנה 3 — הזדמנויות ומעברים',   desc: 'שנה של הזדמנויות, מעברים פיזיים, החלפת עבודה ויצירתיות.' },
+  4:  { title: 'שנה 4 — משוב ויציבות',         desc: 'שנת משוב בגין שנים 9,8,3,2,1 של המחזור הקודם. גם טובה למעברים.' },
+  5:  { title: 'שנה 5 — שינויים',              desc: 'שנה של שינויים בעקבות התשובות שקיבלנו. חופש ותנועה.' },
+  6:  { title: 'שנה 6 — קבלת תשובות',          desc: 'שנה בה מתחילות להגיע תשובות לבחירות שעשינו. האנרגיות נופלות.' },
+  7:  { title: 'שנה 7 — שמיטה רוחנית',         desc: 'שנת משוב. נכון לנוח, ללמוד ולהתפתח. ניתן לפעול בחודשים 8 ו-1.' },
+  8:  { title: 'שנה 8 — התאוששות וצמיחה',      desc: 'החצי הראשון: התאוששות משנה 7. החצי השני: הכנה לסיום המחזור.' },
+  9:  { title: 'שנה 9 — סיום מחזור',           desc: 'התלבטויות הנשמה וצעדים לקראת המחזור הבא. שחרור וסיום.' },
+  11: { title: 'שנה 11 — מסטאר',               desc: 'שנת מסטאר עם אנרגיה מוגברת. תובנות עמוקות ורוחניות גבוהה.' },
+  22: { title: 'שנה 22 — מסטאר',               desc: 'שנת מסטאר. יכולת מימוש חזונות גדולים לפועל.' },
+  33: { title: 'שנה 33 — מסטאר',               desc: 'שנת מסטאר עליונה. אהבה ונתינה ללא תנאי.' },
+};
+
+const GROUP_EXISTING = {
+  '1-2-3': 'סדר וארגון, רציונאלי, ניהול ומנהיגות, אנליטי, אגו וביטוי עצמי.',
+  '4-5-6': 'תלות ו/או חולשה לאחר, נוסטלגי, מעניק אבל מצפה לתמורה, רצון עז להשיג מטרות, חושניות.',
+  '7-8-9': 'התמדה, עצמאות, יוזמה, אסרטיביות, כוח רצון, חריצות, ממוקד מטרה, להיטות ורצון לשפע.',
+  '1-4-7': 'יכולת עשייה, אמינות, פיו וליבו שווים, אמור מעט ועשה הרבה, איש עבודה.',
+  '2-5-8': 'נעים לבריות, ביטחון גבוה, איזון רגשי ופרופורציות נכונות.',
+  '3-6-9': 'זיכרון טוב, הגיוני, ריאלי, שכלתן, בעל אבחון ושיפוט טובים, תפישה חדה, יצירתיות.',
+  '1-5-9': 'יכולת שיפוט גבוהה, פתרון בעיות, סבלנות, נחישות, עקבי, מסור לאחרים.',
+  '3-5-7': 'מודעות עצמית גבוהה, רוחניות וחומריות, הבנת החיים, טוב לב, יכולת נתינה.',
+};
+
+const GROUP_MISSING = {
+  '1-2-3': 'אי-סדר ובעיות ארגון, חוסר שיתוף פעולה, נטייה לבלבול ומבוכה.',
+  '4-5-6': 'תסכולים ואכזבות, רמת ציפיות גבוהה, חוסר אמון, חרטה על מעשים בעבר.',
+  '7-8-9': 'עצלנות, שינה מרובה, אדישות, איטיות, חוסר סבלנות וריכוז.',
+  '1-4-7': 'הרבה דיבורים ומעט מעשים, אמינות נמוכה.',
+  '2-5-8': 'רגישות יתר עד כדי נחיתות, אינו שוכח עלבונות, ביישנות ואי-יציבות.',
+  '3-6-9': 'זיכרון חלש, חוסר ריכוז, אישיות חלשה, דיכאונות.',
+  '1-5-9': 'היסוס, חוסר רצון וריכוז, אי-יציבות וקושי בקבלת החלטות.',
+  '3-5-7': 'חשדנות, חוסר וודאות, חוסר אמון בבני אדם, חשיבה מרובה, ספקנות.',
+};
+
+function getGroupLabel(g) {
+  return g.slice().sort((a,b)=>a-b).join('-');
+}
+</script>
+
+<script>
+// ============================================================
+// app.js — UI + localStorage
+// ============================================================
+
+const AVATAR_COLORS = [
+  '#5B5EA6','#E53E3E','#38A169','#DD6B20',
+  '#3182CE','#805AD5','#D53F8C','#319795',
+  '#D69E2E','#2B6CB0',
+];
+
+function avatarColor(str) {
+  let h = 0;
+  for (const c of str) h = (h * 31 + c.charCodeAt(0)) & 0xFFFF;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
+function initials(first, last) {
+  return ((first || '')[0] || '') + ((last || '')[0] || '');
+}
+
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+const STORAGE_KEY = 'kab_profiles';
+
+const App = {
+  state: {
+    profiles: {},
+    view: 'dashboard',
+    selectedId: null,
+    workspace: {
+      activeIds:   [],
+      startYear:   new Date().getFullYear() - 2,
+      endYear:     new Date().getFullYear() + 5,
+      cellW:       20,
+      searchQuery: '',
+    },
+    spiral: {
+      rotX:        -0.55,
+      rotY:        0.2,
+      panX:        0,
+      panY:        0,
+      zoom:        1,
+      searchQuery: '',
+      activeId:    null,
+      initialized: false,
+      stars:       null,
+    },
+    editingId: null,
+  },
+
+  // ── Boot ──────────────────────────────────────────────────
+  init() {
+    this.loadProfiles();
+    this.renderSidebar();
+    this.renderView();
+    document.addEventListener('click', (e) => {
+      const tooltip = document.getElementById('tooltip');
+      if (tooltip) tooltip.classList.remove('visible');
+      // Close profile picker if clicking outside
+      const wrap = document.getElementById('ws-picker-wrap');
+      const dd = document.getElementById('ws-picker-dropdown');
+      if (dd && dd.style.display !== 'none' && wrap && !wrap.contains(e.target)) {
+        dd.style.display = 'none';
+      }
+    });
+  },
+
+  // ── Storage ───────────────────────────────────────────────
+  loadProfiles() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      this.state.profiles = raw ? JSON.parse(raw) : {};
+    } catch(e) {
+      this.state.profiles = {};
+    }
+    // activeIds starts empty — user picks profiles via the picker
+  },
+
+  persistProfiles() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.profiles));
+  },
+
+  saveProfile(data) {
+    if (data.id && this.state.profiles[data.id]) {
+      Object.assign(this.state.profiles[data.id], data);
+    } else {
+      const pid = generateId();
+      data.id = pid;
+      data.createdAt = new Date().toISOString();
+      this.state.profiles[pid] = { ...data };
+    }
+    this.persistProfiles();
+    return this.state.profiles[data.id];
+  },
+
+  deleteProfile(id) {
+    if (!confirm('האם למחוק פרופיל זה?')) return;
+    delete this.state.profiles[id];
+    this.state.workspace.activeIds = this.state.workspace.activeIds.filter(x => x !== id);
+    this.persistProfiles();
+    if (this.state.selectedId === id) this.state.selectedId = null;
+    if (this.state.view === 'profile') this.navigate('dashboard');
+    else { this.renderSidebar(); this.renderView(); }
+  },
+
+  // ── Navigation ────────────────────────────────────────────
+  navigate(view, id) {
+    this.state.view = view;
+    if (id) this.state.selectedId = id;
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const navEl = document.getElementById(`nav-${view === 'profile' ? 'dashboard' : view}`);
+    if (navEl) navEl.classList.add('active');
+    this.renderSidebar();
+    this.renderView();
+  },
+
+  renderView() {
+    const vc = document.getElementById('view-container');
+    vc.innerHTML = '';
+    if (this.state.view === 'dashboard')  this.renderDashboard(vc);
+    else if (this.state.view === 'profile')   this.renderProfileDetail(vc);
+    else if (this.state.view === 'workspace') this.renderWorkspace(vc);
+    else if (this.state.view === 'spiral')    this.renderSpiralView(vc);
+  },
+
+  // ── Sidebar ───────────────────────────────────────────────
+  renderSidebar() {
+    // הסרגל מכיל רק כפתורי ניווט — אין רשימת פרופילים
+  },
+
+  // ── Dashboard ─────────────────────────────────────────────
+  renderDashboard(vc) {
+    const profiles = Object.values(this.state.profiles);
+    let html = `<div class="page-header">
+      <h2>פרופילים</h2>
+      <p>${profiles.length} פרופיל${profiles.length !== 1 ? 'ים' : ''} במאגר</p>
+    </div>`;
+
+    if (!profiles.length) {
+      html += `<div class="empty-state">
+        <div class="empty-icon">&#10022;</div>
+        <h3>אין פרופילים עדיין</h3>
+        <p>לחצי על "הוסף פרופיל" כדי להתחיל</p>
+      </div>`;
+    } else {
+      const cards = profiles.map(p => {
+        try { return this.profileCard(p); }
+        catch(e) { console.error('profileCard error', p.id, e); return ''; }
+      });
+      html += `<div class="profiles-grid">` + cards.join('') + `</div>`;
+    }
+    vc.innerHTML = html;
+  },
+
+  profileCard(p) {
+    const calc = calcFullProfile(p);
+    const color = avatarColor(p.firstName + p.lastName);
+    const pyC   = PY_COLORS[calc.pyNow] || PY_COLORS[1];
+    return `<div class="profile-card" onclick="App.navigate('profile','${p.id}')">
+      <div class="profile-card-actions">
+        <button class="icon-btn" onclick="event.stopPropagation();App.deleteProfile('${p.id}')" title="מחק">&#10005;</button>
+      </div>
+      <div class="profile-card-header">
+        <div class="profile-card-avatar" style="background:${color}">${initials(p.firstName, p.lastName)}</div>
+        <div class="profile-card-title">
+          <h3>${p.firstName} ${p.lastName}</h3>
+          <span>${p.birthDay}/${p.birthMonth}/${p.birthYear} &bull; גיל ${calc.age}</span>
+        </div>
+      </div>
+      <div class="profile-card-numbers">
+        <div class="mini-num"><div class="n">${calc.lp}</div><div class="l">שביל גורל</div></div>
+        <div class="mini-num"><div class="n">${calc.dayNum}</div><div class="l">יום</div></div>
+        <div class="mini-num"><div class="n">${calc.monthNum}</div><div class="l">חודש</div></div>
+        <div class="mini-num"><div class="n">${calc.yearNum}</div><div class="l">שנה</div></div>
+      </div>
+      <div class="profile-card-py">
+        <div class="py-badge" style="background:${pyC.bg};color:${pyC.text}">${calc.pyNow}</div>
+        <span style="font-size:13px;color:var(--text-muted)">${YEAR_INFO[calc.pyNow]?.title || ''}</span>
+      </div>
+    </div>`;
+  },
+
+  // ── Profile Detail ────────────────────────────────────────
+  renderProfileDetail(vc) {
+    const p = this.state.profiles[this.state.selectedId];
+    if (!p) { this.navigate('dashboard'); return; }
+    const calc  = calcFullProfile(p);
+    const color = avatarColor(p.firstName + p.lastName);
+    const pyC   = PY_COLORS[calc.pyNow] || PY_COLORS[1];
+    const pmC   = PY_COLORS[calc.pmNow] || PY_COLORS[1];
+    const currentPeakIdx = calc.peakAges.findIndex(
+      pa => calc.age >= pa.start && calc.age <= pa.end
+    );
+
+    vc.innerHTML = `
+    <div class="profile-detail">
+      <div class="detail-hero">
+        <div class="detail-avatar" style="background:${color}">${initials(p.firstName, p.lastName)}</div>
+        <div class="detail-hero-info">
+          <h2>${p.firstName} ${p.lastName}</h2>
+          <p>${p.birthDay}/${p.birthMonth}/${p.birthYear} &bull; גיל ${calc.age}</p>
+        </div>
+        <div class="detail-hero-nums">
+          <div class="big-num"><div class="val">${calc.lp}</div><div class="lbl">שביל גורל</div></div>
+          <div class="big-num"><div class="val">${calc.nameVal}</div><div class="lbl">ערך שם</div></div>
+        </div>
+      </div>
+
+      <div class="section-grid" style="margin-bottom:16px">
+        <div class="card">
+          <h3>ספרות תאריך הלידה</h3>
+          <div class="num-row">
+            <div class="num-cell">
+              <div class="digit-raw">${p.birthDay}</div>
+              <div class="digit-reduced">${calc.dayNum}</div>
+              <div class="digit-label">יום</div>
+            </div>
+            <div class="num-cell">
+              <div class="digit-raw">${p.birthMonth}</div>
+              <div class="digit-reduced">${calc.monthNum}</div>
+              <div class="digit-label">חודש</div>
+            </div>
+            <div class="num-cell">
+              <div class="digit-raw">${p.birthYear}</div>
+              <div class="digit-reduced">${calc.yearNum}</div>
+              <div class="digit-label">שנה</div>
+            </div>
+            <div class="num-cell" style="background:var(--primary-light)">
+              <div class="digit-raw">&nbsp;</div>
+              <div class="digit-reduced" style="color:var(--primary)">${calc.lp}</div>
+              <div class="digit-label">שביל גורל</div>
+            </div>
+          </div>
+          <p class="char-text">${NUMBER_MEANINGS[normalizeForGroup(calc.lp)] || ''}</p>
+        </div>
+      </div>
+
+      <div class="section-grid cols-2" style="margin-bottom:16px">
+        <div class="card">
+          <h3>חודש אישי נוכחי</h3>
+          <div class="py-display">
+            <div class="py-large" style="background:${pmC.bg};color:${pmC.text}">${calc.pmNow}</div>
+            <div class="py-info">
+              <h4>${YEAR_INFO[calc.pmNow]?.title || 'חודש ' + calc.pmNow}</h4>
+              <p>${YEAR_INFO[calc.pmNow]?.desc || ''}</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>שנה אישית נוכחית</h3>
+          <div class="py-display">
+            <div class="py-large" style="background:${pyC.bg};color:${pyC.text}">${calc.pyNow}</div>
+            <div class="py-info">
+              <h4>${YEAR_INFO[calc.pyNow]?.title || 'שנה ' + calc.pyNow}</h4>
+              <p>${YEAR_INFO[calc.pyNow]?.desc || ''}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-grid" style="margin-bottom:16px">
+        <div class="card">
+          <h3>פסגות ואתגרים</h3>
+          <div class="pc-pairs">
+            ${[1,2,3,4].map(i => {
+              const ages = calc.peakAges[i-1];
+              const isCurrent = currentPeakIdx === (i-1);
+              return `<div class="pc-pair ${isCurrent ? 'current' : ''}">
+                <div class="pc-side challenge">
+                  <div class="pc-label">אתגר ${i}</div>
+                  <div class="pc-num">${calc.challenges['ch'+i]}</div>
+                  <div class="pc-ages">גיל ${ages.start}&ndash;${ages.end}</div>
+                </div>
+                <div class="pc-vs">
+                  vs
+                  ${isCurrent ? '<br><span class="pc-current-label">עכשיו</span>' : ''}
+                </div>
+                <div class="pc-side peak">
+                  <div class="pc-label">פסגה ${i}</div>
+                  <div class="pc-num">${calc.peaks['peak'+i]}</div>
+                  <div class="pc-ages">גיל ${ages.start}&ndash;${ages.end}</div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="section-grid cols-2" style="margin-bottom:16px">
+        <div class="card">
+          <h3>מספרים קיימים בתאריך</h3>
+          <div class="num-chips" style="margin-bottom:12px">
+            ${[1,2,3,4,5,6,7,8,9].map(n => {
+              const ex = calc.existing.includes(n);
+              return `<div class="num-chip ${ex ? 'exists' : 'missing'}">${n}</div>`;
+            }).join('')}
+          </div>
+          ${this.renderGroupsFor(calc.existing, 'exists')}
+        </div>
+        <div class="card">
+          <h3>מספרים חסרים</h3>
+          <div class="num-chips" style="margin-bottom:12px">
+            ${calc.missing.length
+              ? calc.missing.map(n => `<div class="num-chip exists" style="background:var(--accent)">${n}</div>`).join('')
+              : '<span style="color:var(--text-muted);font-size:13px">אין מספרים חסרים</span>'}
+          </div>
+          ${this.renderGroupsFor(calc.missing, 'missing')}
+        </div>
+      </div>
+
+      <div class="section-grid" style="margin-bottom:16px">
+        <div class="card">
+          <h3>הרמוניה שם&ndash;תאריך</h3>
+          <div class="harmony-row">
+            <div class="harmony-status ${calc.harmony.valid ? 'ok' : 'bad'}"></div>
+            <div>
+              <strong>יום: ${calc.dayNum} | שביל גורל: ${calc.lp} | שם פרטי: ${calc.firstNameVal}</strong><br>
+              <span style="font-size:13px;color:var(--text-muted)">
+                ${calc.harmony.valid
+                  ? `הרמוניה תקינה &mdash; ${calc.harmony.pair.map(x=>x.label+' '+x.val).join(' ו')} חולקים קבוצה, ${calc.harmony.alone.label} ${calc.harmony.alone.val} בקבוצה אחרת (הפרש ${calc.harmony.diff})`
+                  : 'הרמוניה לא תקינה'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-grid" style="margin-bottom:16px">
+        <div class="card">
+          <h3>כיוון תעסוקתי</h3>
+          <p class="career-text">${CAREER_INFO[normalizeForGroup(calc.lp)] || ''}</p>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  renderGroupsFor(nums, mode) {
+    const found = new Set();
+    for (const g of HARMONY_GROUPS) {
+      const norm = nums.map(normalizeForGroup);
+      const matches = g.filter(x => norm.includes(x));
+      if (matches.length >= 2) found.add(getGroupLabel(g));
+    }
+    if (!found.size) return '';
+    const data = mode === 'exists' ? GROUP_EXISTING : GROUP_MISSING;
+    return [...found].map(label => {
+      const desc = data[label] || '';
+      return `<div style="margin-bottom:8px">
+        <span class="group-tag ${mode === 'missing' ? 'missing' : ''}">${label}</span>
+        <span style="font-size:12px;color:var(--text-muted);margin-right:4px">${desc}</span>
+      </div>`;
+    }).join('');
+  },
+
+  // ── Workspace ─────────────────────────────────────────────
+  renderWorkspace(vc) {
+    const ws = this.state.workspace;
+
+    const hasSelection = ws.activeIds.length > 0;
+    vc.innerHTML = `<div class="workspace">
+      <div class="workspace-toolbar">
+        <div class="ws-picker-wrap" id="ws-picker-wrap">
+          <button class="ws-picker-btn ${hasSelection ? 'has-selection' : ''}" id="ws-picker-btn"
+            onclick="App.toggleWsPicker()">
+            &#128100; בחרי פרופילים
+            <span class="ws-picker-count" id="ws-picker-count">(${ws.activeIds.length}/10)</span>
+          </button>
+          <div class="ws-picker-dropdown" id="ws-picker-dropdown" style="display:none">
+            <div class="ws-picker-search-wrap">
+              <input type="text" class="ws-picker-search" id="ws-picker-search"
+                placeholder="חיפוש פרופיל..."
+                oninput="App.filterWsPickerItems(this.value)">
+            </div>
+            <div class="ws-picker-list" id="ws-picker-list"></div>
+            <div class="ws-picker-footer">
+              <span id="ws-picker-footer-count">${ws.activeIds.length} נבחרו מתוך 10</span>
+              <button class="ws-picker-clear-btn" onclick="App.clearWsProfiles()">נקה הכל</button>
+            </div>
+          </div>
+        </div>
+        ${hasSelection ? `<div class="ws-chips" id="ws-chips">${this._buildWsChipsHtml()}</div>` : `<div class="ws-chips" id="ws-chips"></div>`}
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-label">שנים:</span>
+        <input type="number" class="toolbar-input" id="ws-start" value="${ws.startYear}"
+          onchange="App.updateWorkspaceRange()">
+        <span style="font-size:13px;color:var(--text-muted)">עד</span>
+        <input type="number" class="toolbar-input" id="ws-end" value="${ws.endYear}"
+          onchange="App.updateWorkspaceRange()">
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-label">זום:</span>
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="App.zoom(-4)">&#8722;</button>
+          <span class="zoom-level" id="zoom-label">${ws.cellW}px</span>
+          <button class="zoom-btn" onclick="App.zoom(4)">+</button>
+        </div>
+      </div>
+      <div class="timeline-wrap">
+        <div class="timeline-inner" id="timeline-inner"></div>
+      </div>
+    </div>`;
+
+    this.renderTimeline();
+    this._initTimelineDrag();
+  },
+
+  _initTimelineDrag() {
+    const inner = document.getElementById('timeline-inner');
+    if (!inner) return;
+    let isDown = false, startX = 0, scrollStart = 0;
+
+    inner.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      isDown = true;
+      startX = e.clientX;
+      scrollStart = inner.scrollLeft;
+      inner.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!isDown) return;
+      isDown = false;
+      const el = document.getElementById('timeline-inner');
+      if (el) el.style.cursor = 'grab';
+    });
+
+    inner.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      const dx = e.clientX - startX;
+      inner.scrollLeft = scrollStart - dx;
+    });
+
+    // Touch support
+    inner.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      scrollStart = inner.scrollLeft;
+    }, { passive: true });
+
+    inner.addEventListener('touchmove', (e) => {
+      const dx = e.touches[0].clientX - startX;
+      inner.scrollLeft = scrollStart - dx;
+    }, { passive: true });
+  },
+
+  toggleWsPicker() {
+    const dd = document.getElementById('ws-picker-dropdown');
+    if (!dd) return;
+    const open = dd.style.display !== 'none';
+    if (open) {
+      dd.style.display = 'none';
+    } else {
+      dd.style.display = 'flex';
+      this.renderWsPickerItems('');
+      setTimeout(() => { const s = document.getElementById('ws-picker-search'); if (s) s.focus(); }, 50);
+    }
+  },
+
+  filterWsPickerItems(q) {
+    this.renderWsPickerItems(q || '');
+  },
+
+  renderWsPickerItems(q) {
+    const list = document.getElementById('ws-picker-list');
+    if (!list) return;
+    const query = q.trim().toLowerCase();
+    const ws = this.state.workspace;
+    const profiles = Object.values(this.state.profiles);
+    const filtered = query ? profiles.filter(p => (p.firstName + ' ' + p.lastName).toLowerCase().includes(query)) : profiles;
+    const selCount = ws.activeIds.length;
+    list.innerHTML = filtered.length ? filtered.map(p => {
+      const sel = ws.activeIds.includes(p.id);
+      const dis = !sel && selCount >= 10;
+      const color = avatarColor(p.firstName + p.lastName);
+      return `<label class="ws-picker-item ${sel ? 'selected' : ''} ${dis ? 'disabled' : ''}">
+        <input type="checkbox" ${sel ? 'checked' : ''} ${dis ? 'disabled' : ''}
+          onchange="App.toggleWsProfile('${p.id}')">
+        <div class="tl-avatar" style="background:${color};width:22px;height:22px;font-size:9px;flex-shrink:0">${initials(p.firstName, p.lastName)}</div>
+        <span class="ws-picker-item-name">${p.firstName} ${p.lastName}</span>
+      </label>`;
+    }).join('') : '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:13px">לא נמצאו פרופילים</div>';
+    const fc = document.getElementById('ws-picker-footer-count');
+    if (fc) fc.textContent = `${selCount} נבחרו מתוך 10`;
+  },
+
+  toggleWsProfile(id) {
+    const ws = this.state.workspace;
+    const idx = ws.activeIds.indexOf(id);
+    if (idx >= 0) {
+      ws.activeIds.splice(idx, 1);
+    } else {
+      if (ws.activeIds.length >= 10) return;
+      ws.activeIds.push(id);
+    }
+    const q = document.getElementById('ws-picker-search');
+    this.renderWsPickerItems(q ? q.value : '');
+    this.renderWsChips();
+    this.renderTimeline();
+  },
+
+  clearWsProfiles() {
+    this.state.workspace.activeIds = [];
+    const q = document.getElementById('ws-picker-search');
+    this.renderWsPickerItems(q ? q.value : '');
+    this.renderWsChips();
+    this.renderTimeline();
+  },
+
+  _buildWsChipsHtml() {
+    const ws = this.state.workspace;
+    return ws.activeIds.map(id => {
+      const p = this.state.profiles[id];
+      if (!p) return '';
+      const color = avatarColor(p.firstName + p.lastName);
+      return `<div class="ws-chip">
+        <div class="ws-chip-dot" style="background:${color}"></div>
+        <span>${p.firstName} ${p.lastName}</span>
+        <button class="ws-chip-remove" onclick="App.toggleWsProfile('${id}')">&times;</button>
+      </div>`;
+    }).join('');
+  },
+
+  renderWsChips() {
+    const chips = document.getElementById('ws-chips');
+    const counter = document.getElementById('ws-picker-count');
+    const btn = document.getElementById('ws-picker-btn');
+    const ws = this.state.workspace;
+    const hasSelection = ws.activeIds.length > 0;
+    if (counter) counter.textContent = `(${ws.activeIds.length}/10)`;
+    if (btn) btn.className = `ws-picker-btn ${hasSelection ? 'has-selection' : ''}`;
+    if (chips) chips.innerHTML = this._buildWsChipsHtml();
+  },
+
+  updateWorkspaceRange() {
+    const s = parseInt(document.getElementById('ws-start').value);
+    const e = parseInt(document.getElementById('ws-end').value);
+    if (isNaN(s) || isNaN(e) || s >= e) return;
+    this.state.workspace.startYear = s;
+    this.state.workspace.endYear   = e;
+    this.renderTimeline();
+  },
+
+  zoom(delta) {
+    const ws = this.state.workspace;
+    ws.cellW = Math.max(8, Math.min(60, ws.cellW + delta));
+    const lbl = document.getElementById('zoom-label');
+    if (lbl) lbl.textContent = ws.cellW + 'px';
+    this.renderTimeline();
+  },
+
+  renderTimeline() {
+    const inner = document.getElementById('timeline-inner');
+    if (!inner) return;
+    const ws = this.state.workspace;
+
+    const activeProfiles = ws.activeIds.map(id => this.state.profiles[id]).filter(Boolean);
+
+    if (!activeProfiles.length) {
+      inner.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">&#128100;</div>
+        <h3>בחרי פרופילים להצגה</h3>
+        <p>לחצי על "בחרי פרופילים" כדי לבחור עד 10 פרופילים להשוואה</p>
+      </div>`;
+      return;
+    }
+
+    const today   = new Date();
+    const todayYr = today.getFullYear();
+    const todayMo = today.getMonth() + 1;
+    const MONTHS  = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+
+    const years = [];
+    for (let yr = ws.startYear; yr <= ws.endYear; yr++) years.push(yr);
+
+    // Header row 1: year groups
+    let yearHeaders = years.map(yr => {
+      const isThisYear = yr === todayYr;
+      return `<th colspan="12" class="tl-year-group ${isThisYear ? 'today-year' : ''}"
+        style="min-width:${ws.cellW * 12}px">${yr}</th>`;
+    }).join('');
+
+    // Header row 2: month numbers
+    let monthHeaders = years.flatMap(yr =>
+      MONTHS.map((mo, idx) => {
+        const moNum = idx + 1;
+        const isToday = yr === todayYr && moNum === todayMo;
+        return `<th class="tl-month-header ${isToday ? 'today-month' : ''}"
+          style="width:${ws.cellW}px;min-width:${ws.cellW}px">
+          ${ws.cellW >= 16 ? mo : ''}
+        </th>`;
+      })
+    ).join('');
+
+    let html = `<table class="tl-table">
+      <thead>
+        <tr>
+          <th class="tl-name-cell tl-header-name">שם</th>
+          ${yearHeaders}
+        </tr>
+        <tr>
+          <th class="tl-name-cell" style="border-bottom:2px solid var(--border)"></th>
+          ${monthHeaders}
+        </tr>
+      </thead>
+      <tbody>`;
+
+    for (const p of activeProfiles) {
+      const calc     = calcFullProfile(p);
+      const color    = avatarColor(p.firstName + p.lastName);
+      const timeline = buildMonthlyTimeline(p.birthDay, p.birthMonth, p.birthYear,
+                                            ws.startYear, ws.endYear);
+
+      html += `<tr>
+        <td class="tl-name-cell tl-row-name">
+          <div class="tl-name-inner">
+            <div class="tl-avatar" style="background:${color}">${initials(p.firstName, p.lastName)}</div>
+            <div>
+              <div class="tl-name-text">${p.firstName} ${p.lastName}</div>
+              <div class="tl-age-text">גורל ${calc.lp} &bull; יום הולדת ${p.birthDay}/${p.birthMonth}</div>
+            </div>
+          </div>
+        </td>
+        ${timeline.map(slot => {
+          if (slot.pyNum === null) {
+            return `<td class="tl-cell tl-monthly-cell no-birth" style="width:${ws.cellW}px;min-width:${ws.cellW}px"></td>`;
+          }
+          const pyC      = PY_COLORS[slot.pyNum] || PY_COLORS[1];
+          const isFuture = slot.year > todayYr || (slot.year === todayYr && slot.month > todayMo);
+          const tip = `${slot.year}/${slot.month} | שנה אישית ${slot.pyNum}${slot.isBirthMonth ? ' | יום הולדת' : ''}`;
+          return `<td class="tl-cell tl-monthly-cell ${isFuture ? 'future-col' : ''}"
+            style="width:${ws.cellW}px;min-width:${ws.cellW}px">
+            <div class="tl-py-block ${slot.isCurrent ? 'current-year' : ''} ${slot.isBirthMonth ? 'birth-month-block' : ''}"
+              style="background:${pyC.bg};color:${pyC.text}"
+              data-tip="${tip}"
+              onmouseenter="App.showTooltip(event,this)"
+              onmouseleave="App.hideTooltip()">
+              ${ws.cellW >= 14 ? slot.pyNum : ''}
+            </div>
+          </td>`;
+        }).join('')}
+      </tr>`;
+    }
+
+    html += `</tbody></table>`;
+    inner.innerHTML = html;
+
+    // גלול לחודש הנוכחי
+    const todayYrIdx = years.indexOf(todayYr);
+    if (todayYrIdx >= 0) {
+      const monthOffset = (todayYrIdx * 12 + (todayMo - 1)) * ws.cellW;
+      const viewCenter  = inner.clientWidth / 2;
+      inner.scrollLeft  = -(monthOffset - viewCenter);
+    }
+  },
+
+  // ── Spiral View (3D Canvas) ───────────────────────────────
+  renderSpiralView(vc) {
+    const sp = this.state.spiral;
+    vc.innerHTML = `<div class="spiral-view">
+      <div class="workspace-toolbar">
+        <span class="toolbar-label">חיפוש:</span>
+        <div class="ws-search-wrap">
+          <input type="text" id="spiral-search" class="ws-search"
+            placeholder="הקלידי שם לחיפוש..."
+            value="${sp.searchQuery || ''}"
+            oninput="App.onSpiralSearch(this.value)">
+        </div>
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-label">זווית:</span>
+        <div class="zoom-controls">
+          <button class="view-preset-btn" onclick="App.setSpiralView('top')">מלמעלה</button>
+          <button class="view-preset-btn" onclick="App.setSpiralView('perspective')">פרספקטיבה</button>
+          <button class="view-preset-btn" onclick="App.setSpiralView('side')">מהצד</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-label">זום:</span>
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="App.spiralZoom(0.8)">&#8722;</button>
+          <span class="zoom-level" id="spiral-zoom-label">${Math.round(sp.zoom*100)}%</span>
+          <button class="zoom-btn" onclick="App.spiralZoom(1.25)">+</button>
+        </div>
+        <button class="zoom-btn" style="margin-right:4px;font-size:11px;width:auto;padding:0 8px"
+          onclick="App.spiralReset()">מרכז</button>
+      </div>
+      <div class="spiral-canvas-wrap" id="spiral-wrap">
+        <canvas id="spiral-canvas"></canvas>
+        <div id="spiral-info-panel" class="spiral-info" style="display:none"></div>
+        <div class="spiral-legend" id="spiral-legend"></div>
+        <div class="spiral-hint">גרור לסיבוב · Ctrl+גרור להזזה · גלגלת לזום</div>
+      </div>
+    </div>`;
+
+    this.setupSpiralInteraction();
+    this.renderSpiralLegend();
+
+    setTimeout(() => {
+      const s = document.getElementById('spiral-search');
+      if (s) s.focus();
+    }, 50);
+  },
+
+  onSpiralSearch(q) {
+    this.state.spiral.searchQuery = q || '';
+    const query = (q || '').trim().toLowerCase();
+    const profiles = Object.values(this.state.profiles);
+    if (!query) {
+      this.state.spiral.activeId = null;
+    } else {
+      const match = profiles.find(p =>
+        (p.firstName + ' ' + p.lastName).toLowerCase().includes(query)
+      );
+      this.state.spiral.activeId = match ? match.id : null;
+    }
+    this.draw3DSpiral();
+  },
+
+  setSpiralView(preset) {
+    const sp = this.state.spiral;
+    if (preset === 'top') {
+      sp.rotX = -Math.PI / 2 + 0.01;
+      sp.rotY = 0;
+    } else if (preset === 'perspective') {
+      sp.rotX = -0.55;
+      sp.rotY = 0.2;
+    } else if (preset === 'side') {
+      sp.rotX = 0.05;
+      sp.rotY = 0;
+    }
+    this.draw3DSpiral();
+  },
+
+  setupSpiralInteraction() {
+    const wrap   = document.getElementById('spiral-wrap');
+    const canvas = document.getElementById('spiral-canvas');
+    if (!wrap || !canvas) return;
+    const sp = this.state.spiral;
+
+    const resizeCanvas = () => {
+      const rect = wrap.getBoundingClientRect();
+      canvas.width  = rect.width;
+      canvas.height = rect.height;
+      sp.stars = null;
+      this.draw3DSpiral();
+    };
+    resizeCanvas();
+    const ro = new ResizeObserver(resizeCanvas);
+    ro.observe(wrap);
+
+    wrap.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const factor = e.deltaY > 0 ? 0.93 : 1.07;
+      sp.zoom = Math.max(0.1, Math.min(20, sp.zoom * factor));
+      this.draw3DSpiral();
+      const lbl = document.getElementById('spiral-zoom-label');
+      if (lbl) lbl.textContent = Math.round(sp.zoom * 100) + '%';
+    }, { passive: false });
+
+    let dragging = false, lastX = 0, lastY = 0, dragCtrl = false;
+    wrap.addEventListener('mousedown', (e) => {
+      dragging  = true;
+      lastX     = e.clientX;
+      lastY     = e.clientY;
+      dragCtrl  = e.ctrlKey || e.metaKey || e.button === 2;
+      e.preventDefault();
+    });
+    wrap.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (dragCtrl || e.ctrlKey) {
+        sp.panX += dx;
+        sp.panY += dy;
+      } else {
+        sp.rotY += dx * 0.007;
+        sp.rotX += dy * 0.007;
+        sp.rotX  = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 3, sp.rotX));
+      }
+      this.draw3DSpiral();
+    });
+    document.addEventListener('mouseup', () => { dragging = false; });
+  },
+
+  spiralZoom(factor) {
+    const sp = this.state.spiral;
+    sp.zoom = Math.max(0.1, Math.min(20, sp.zoom * factor));
+    this.draw3DSpiral();
+    const lbl = document.getElementById('spiral-zoom-label');
+    if (lbl) lbl.textContent = Math.round(sp.zoom * 100) + '%';
+  },
+
+  spiralReset() {
+    const sp = this.state.spiral;
+    sp.panX = 0;
+    sp.panY = 0;
+    sp.zoom = 1;
+    sp.rotX = -0.55;
+    sp.rotY = 0.2;
+    this.draw3DSpiral();
+    const lbl = document.getElementById('spiral-zoom-label');
+    if (lbl) lbl.textContent = '100%';
+  },
+
+  // ── 3D math helpers ──
+  _rotate3D(x, y, z, rotX, rotY) {
+    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+    const x1 = x * cosY + z * sinY;
+    const y1 = y;
+    const z1 = -x * sinY + z * cosY;
+    const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+    return {
+      x: x1,
+      y: y1 * cosX - z1 * sinX,
+      z: y1 * sinX + z1 * cosX,
+    };
+  },
+
+  _project3D(x, y, z, sp, cx, cy) {
+    const r  = this._rotate3D(x, y, z, sp.rotX, sp.rotY);
+    const fov = 1400;
+    const s   = sp.zoom * 0.85;
+    const d   = fov / (fov + r.z * 0.18);
+    return { sx: cx + sp.panX + r.x * d * s, sy: cy + sp.panY + r.y * d * s, depth: r.z, d };
+  },
+
+  draw3DSpiral() {
+    const canvas = document.getElementById('spiral-canvas');
+    if (!canvas) return;
+    const sp  = this.state.spiral;
+    const p   = sp.activeId ? this.state.profiles[sp.activeId] : null;
+    const W   = canvas.width;
+    const H   = canvas.height;
+    const cx  = W / 2;
+    const cy  = H / 2;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.75);
+    grad.addColorStop(0, '#0d0f1e');
+    grad.addColorStop(1, '#040508');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Stars
+    if (!sp.stars) {
+      sp.stars = Array.from({ length: 240 }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.3 + 0.15,
+        a: Math.random() * 0.55 + 0.15,
+      }));
+    }
+    sp.stars.forEach(s => {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+      ctx.fill();
+    });
+
+    if (!p) {
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.font = '18px Heebo, Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('חיפוש פרופיל להצגה', cx, cy);
+      const panel = document.getElementById('spiral-info-panel');
+      if (panel) panel.style.display = 'none';
+      return;
+    }
+
+    const today     = new Date();
+    const todayYr   = today.getFullYear();
+    const MIN_R     = 55;
+    const SPACING   = 88;   // radius growth per 9-year cycle
+    const Y_RISE    = 20;   // height rise per year
+    const STEPS     = 32;   // arc resolution
+    const ARC_W     = 14;   // base stroke width
+
+    const startYear = p.birthYear;
+    const endYear   = todayYr + 12;
+
+    // Build segments with pre-rotated depth for sorting
+    const segments = [];
+    for (let yr = startYear; yr <= endYear; yr++) {
+      const idx   = yr - startYear;
+      const pyNum = calcPYForBirthdayYear(p.birthDay, p.birthMonth, yr);
+      const col   = PY_COLORS[pyNum]?.bg || '#aaa';
+
+      const bday     = new Date(yr, p.birthMonth - 1, p.birthDay);
+      const bdayNext = new Date(yr + 1, p.birthMonth - 1, p.birthDay);
+      const isCurrent = today >= bday && today < bdayNext;
+      const isFuture  = yr > todayYr;
+
+      const pts3D = [];
+      for (let s = 0; s <= STEPS; s++) {
+        const t     = idx + s / STEPS;
+        const angle = (t / 9) * 2 * Math.PI - Math.PI / 2;
+        const r     = MIN_R + (t / 9) * SPACING;
+        pts3D.push({ x: r * Math.cos(angle), y: -t * Y_RISE, z: r * Math.sin(angle) });
+      }
+
+      // Midpoint depth for painter's sort
+      const midT     = idx + 0.5;
+      const midAngle = (midT / 9) * 2 * Math.PI - Math.PI / 2;
+      const midR     = MIN_R + (midT / 9) * SPACING;
+      const mid3D    = this._rotate3D(midR * Math.cos(midAngle), -midT * Y_RISE, midR * Math.sin(midAngle), sp.rotX, sp.rotY);
+
+      segments.push({ pts3D, col, isCurrent, isFuture, yr, idx, pyNum, depth: mid3D.z });
+    }
+
+    // Painter's sort: back to front
+    segments.sort((a, b) => b.depth - a.depth);
+
+    // Draw segments
+    for (const seg of segments) {
+      const projected = seg.pts3D.map(pt => this._project3D(pt.x, pt.y, pt.z, sp, cx, cy));
+      const avgD = projected.reduce((s, pt) => s + pt.d, 0) / projected.length;
+      const lw   = Math.max(1, (seg.isCurrent ? ARC_W + 7 : ARC_W) * avgD);
+
+      ctx.save();
+      ctx.globalAlpha = seg.isFuture ? 0.4 : 1;
+      if (seg.isCurrent) {
+        ctx.shadowBlur  = 28;
+        ctx.shadowColor = seg.col;
+      }
+      ctx.beginPath();
+      ctx.moveTo(projected[0].sx, projected[0].sy);
+      for (let i = 1; i < projected.length; i++) {
+        ctx.lineTo(projected[i].sx, projected[i].sy);
+      }
+      ctx.strokeStyle = seg.col;
+      ctx.lineWidth   = lw;
+      ctx.lineCap     = 'round';
+      ctx.lineJoin    = 'round';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Year labels (every 9 years)
+    ctx.globalAlpha  = 1;
+    ctx.font         = 'bold 11px Heebo, Arial';
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    for (let yr = startYear; yr <= endYear; yr += 9) {
+      const idx   = yr - startYear;
+      const angle = (idx / 9) * 2 * Math.PI - Math.PI / 2;
+      const r     = MIN_R + (idx / 9) * SPACING + ARC_W / 2 + 10;
+      const pt    = this._project3D(r * Math.cos(angle), -idx * Y_RISE, r * Math.sin(angle), sp, cx, cy);
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillText(`${yr}`, pt.sx, pt.sy);
+    }
+
+    // Birth dot
+    const birthPt = this._project3D(0, 0, -MIN_R, sp, cx, cy);
+    ctx.save();
+    ctx.shadowBlur  = 14;
+    ctx.shadowColor = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(birthPt.sx, birthPt.sy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.restore();
+
+    // Info panel
+    const calc  = calcFullProfile(p);
+    const color = avatarColor(p.firstName + p.lastName);
+    const panel = document.getElementById('spiral-info-panel');
+    if (panel) {
+      panel.style.display = 'block';
+      panel.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:32px;height:32px;border-radius:50%;background:${color};
+            display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:13px;color:#fff;flex-shrink:0">
+            ${initials(p.firstName, p.lastName)}
+          </div>
+          <div>
+            <h4>${p.firstName} ${p.lastName}</h4>
+            <p>גיל ${calc.age} | שביל גורל ${calc.lp}</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div style="text-align:center">
+            <div style="font-size:22px;font-weight:800;color:${PY_COLORS[calc.pyNow]?.bg}">${calc.pyNow}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.5)">שנה אישית</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:22px;font-weight:800;color:${PY_COLORS[calc.pmNow]?.bg}">${calc.pmNow}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.5)">חודש אישי</div>
+          </div>
+        </div>`;
+    }
+  },
+
+  renderSpiralLegend() {
+    const el = document.getElementById('spiral-legend');
+    if (!el) return;
+    el.innerHTML = [1,2,3,4,5,6,7,8,9].map(n => {
+      const c = PY_COLORS[n];
+      return `<div class="spiral-legend-item">
+        <div class="spiral-legend-dot" style="background:${c.bg}"></div>
+        <span>${n}</span>
+      </div>`;
+    }).join('');
+  },
+
+  // ── Tooltip ───────────────────────────────────────────────
+  showTooltip(e, el) {
+    const tip  = document.getElementById('tooltip');
+    const text = el.getAttribute('data-tip');
+    if (!tip || !text) return;
+    tip.textContent = text;
+    tip.classList.add('visible');
+    this.moveTooltip(e);
+    el.onmousemove = ev => this.moveTooltip(ev);
+  },
+  moveTooltip(e) {
+    const tip = document.getElementById('tooltip');
+    if (!tip) return;
+    tip.style.left = (e.clientX + 12) + 'px';
+    tip.style.top  = (e.clientY - 36) + 'px';
+  },
+  hideTooltip() {
+    const tip = document.getElementById('tooltip');
+    if (tip) tip.classList.remove('visible');
+  },
+
+  // ── Modal ─────────────────────────────────────────────────
+  openModal(id) {
+    this.state.editingId = id || null;
+    const overlay = document.getElementById('modal-overlay');
+    const title   = document.getElementById('modal-title');
+    if (id) {
+      const p = this.state.profiles[id];
+      title.textContent = 'עריכת פרופיל';
+      document.getElementById('f-firstName').value = p.firstName;
+      document.getElementById('f-lastName').value  = p.lastName;
+      document.getElementById('f-day').value        = p.birthDay;
+      document.getElementById('f-month').value      = p.birthMonth;
+      document.getElementById('f-year').value       = p.birthYear;
+    } else {
+      title.textContent = 'פרופיל חדש';
+      document.getElementById('profile-form').reset();
+    }
+    overlay.classList.add('open');
+    setTimeout(() => document.getElementById('f-firstName').focus(), 50);
+  },
+
+  closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    this.state.editingId = null;
+  },
+
+  submitProfile(e) {
+    e.preventDefault();
+    const data = {
+      firstName:  document.getElementById('f-firstName').value.trim(),
+      lastName:   document.getElementById('f-lastName').value.trim(),
+      birthDay:   parseInt(document.getElementById('f-day').value),
+      birthMonth: parseInt(document.getElementById('f-month').value),
+      birthYear:  parseInt(document.getElementById('f-year').value),
+    };
+    if (this.state.editingId) data.id = this.state.editingId;
+    const saved = this.saveProfile(data);
+    if (!saved) return;
+    this.closeModal();
+    this.renderSidebar();
+    if (this.state.view === 'dashboard') this.renderView();
+    else if (this.state.view === 'workspace') this.renderTimeline();
+    else if (!this.state.editingId) this.navigate('profile', saved.id);
+    else this.renderView();
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>
