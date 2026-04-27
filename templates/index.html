@@ -1069,18 +1069,18 @@ const MASTER_NUMBERS = new Set([11, 22, 33]);
 
 const PY_COLORS = {
   0:  { bg: '#CBD5E0', text: '#2D3748' },
-  1:  { bg: '#FC8181', text: '#fff'    },
-  2:  { bg: '#63B3ED', text: '#fff'    },
-  3:  { bg: '#F6E05E', text: '#2D3748' },
-  4:  { bg: '#68D391', text: '#fff'    },
-  5:  { bg: '#F6AD55', text: '#fff'    },
-  6:  { bg: '#B794F4', text: '#fff'    },
-  7:  { bg: '#4299E1', text: '#fff'    },
-  8:  { bg: '#FC9F5B', text: '#fff'    },
-  9:  { bg: '#48BB78', text: '#fff'    },
-  11: { bg: '#E9D8FD', text: '#553C9A' },
-  22: { bg: '#FEFCBF', text: '#744210' },
-  33: { bg: '#FED7D7', text: '#822727' },
+  1:  { bg: '#C0392B', text: '#fff'    },
+  2:  { bg: '#7D3C98', text: '#fff'    },
+  3:  { bg: '#1E8449', text: '#fff'    },
+  4:  { bg: '#D4AC0D', text: '#fff'    },
+  5:  { bg: '#1A5276', text: '#fff'    },
+  6:  { bg: '#7D3C98', text: '#fff'    },
+  7:  { bg: '#D4AC0D', text: '#fff'    },
+  8:  { bg: '#C0392B', text: '#fff'    },
+  9:  { bg: '#D4AC0D', text: '#fff'    },
+  11: { bg: '#6C3483', text: '#fff'    },
+  22: { bg: '#B7950B', text: '#fff'    },
+  33: { bg: '#6C3483', text: '#fff'    },
 };
 
 function reduceNumber(n) {
@@ -2528,7 +2528,7 @@ const App = {
     canvas.addEventListener('mouseup', e => {
       if (!moved) {
         const hit = this._mgHitTest(canvas, e.offsetX, e.offsetY);
-        if (hit && hit.profileId) this._mgOpenPanel(hit.profileId);
+        if (hit && hit.profileId) this._mgOpenPanel(hit.profileId, hit.year, hit.month);
       }
       dragging = false; outer.classList.remove('dragging');
     });
@@ -2556,10 +2556,12 @@ const App = {
     const NW=160, YH=22, MH=22, HDR=44, RH=46, PAD=3, MSH=28, MRH=42;
     const active = m.activeIds.map(id => this.state.profiles[id]).filter(Boolean);
     const today = new Date();
-    const todayIdx = this._mgMonthIndex(today.getFullYear(), today.getMonth()+1);
+    const centerDate = m.checkDate || today;
+    const centerIdx = this._mgMonthIndex(centerDate.getFullYear(), centerDate.getMonth()+1);
+    const todayIdx  = this._mgMonthIndex(today.getFullYear(), today.getMonth()+1);
     const visN = Math.ceil((W - NW) / m.cellW) + 4;
     const halfVis = Math.floor((W - NW) / 2 / m.cellW);
-    const startIdx = todayIdx - halfVis + Math.round(m.scrollX / m.cellW);
+    const startIdx = centerIdx - halfVis + Math.round(m.scrollX / m.cellW);
     const pixOff = -(m.scrollX % m.cellW);
 
     ctx.clearRect(0, 0, W, H);
@@ -2577,10 +2579,8 @@ const App = {
 
     for (let i = 0; i < visN; i++) {
       const rawIdx = startIdx + i;
-      const mo = ((rawIdx % 12) + 12) % 12;
-      const yr = 2000 + Math.floor((rawIdx - mo) / 12 + (mo > rawIdx % 12 + 12 ? 0 : 0));
-      const year = 2000 + Math.floor(rawIdx / 12) + (rawIdx < 0 && rawIdx % 12 !== 0 ? -1 : 0);
       const month = ((rawIdx % 12) + 12) % 12 + 1;
+      const year  = 2000 + Math.floor(rawIdx / 12);
       const x = NW + pixOff + i * m.cellW;
       if (x + m.cellW < NW || x > W) continue;
 
@@ -2638,15 +2638,22 @@ const App = {
         }
       });
 
-      // Merge row
+      // Merge row — מסמן רק סכנת 4/7
       if (slotPYs.length > 0) {
         const score = this._mgHarmony(slotPYs);
-        const pyC = PY_COLORS[slotPYs[0]] || PY_COLORS[1];
-        ctx.save();
-        ctx.beginPath(); this._mgRR(ctx, x+PAD, mergeY+MSH+PAD, m.cellW-PAD*2, MRH-PAD*2, 4);
-        ctx.globalAlpha = score === 2 ? 1 : score === 1 ? 0.45 : 0.14;
-        ctx.fillStyle = score === 0 ? '#CBD5E0' : pyC.bg;
-        ctx.fill(); ctx.globalAlpha = 1; ctx.restore();
+        if (score === -1) {
+          ctx.save();
+          ctx.beginPath(); this._mgRR(ctx, x+PAD, mergeY+MSH+PAD, m.cellW-PAD*2, MRH-PAD*2, 4);
+          ctx.fillStyle = '#C0392B'; ctx.globalAlpha = 0.88; ctx.fill();
+          ctx.globalAlpha = 1;
+          if (m.cellW >= 14) {
+            ctx.fillStyle = '#fff';
+            ctx.font = `bold ${Math.min(13, m.cellW*0.55)}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('!', x + m.cellW/2, mergeY+MSH+MRH/2+5);
+          }
+          ctx.restore();
+        }
       }
     }
 
@@ -2710,11 +2717,9 @@ const App = {
     if (pys.length < 2) return 0;
     const n = v => v===11?2:v===22?4:v===33?6:v;
     const ns = pys.map(n);
-    if (ns.every(v => v === ns[0])) return 2;
-    const G = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]];
-    let ok=0, tot=0;
-    for (let i=0;i<ns.length;i++) for (let j=i+1;j<ns.length;j++) { tot++; if (G.some(g=>g.includes(ns[i])&&g.includes(ns[j]))) ok++; }
-    return ok/tot >= 0.5 ? 1 : 0;
+    // כלל: שנה 4 + שנה 7 = סכנה
+    if (ns.includes(4) && ns.includes(7)) return -1;
+    return 0;
   },
 
   _mgHitTest(canvas, mx, my) {
@@ -2730,7 +2735,7 @@ const App = {
     const col = Math.floor((mx - NW - pixOff) / m.cellW);
     const rawIdx = startIdx + col;
     const month = ((rawIdx % 12) + 12) % 12 + 1;
-    const year = 2000 + Math.floor(rawIdx / 12) + (rawIdx < 0 && rawIdx % 12 !== 0 ? -1 : 0);
+    const year  = 2000 + Math.floor(rawIdx / 12);
     for (let ri=0; ri<active.length; ri++) {
       const ry = HDR + ri * RH;
       if (my >= ry && my < ry+RH) return { profileId: active[ri].id, col, year, month };
@@ -2740,14 +2745,12 @@ const App = {
     return null;
   },
 
-  _mgOpenPanel(profileId) {
+  _mgOpenPanel(profileId, year, month) {
     const panel = document.getElementById('mg-panel');
     if (!panel) return;
     const p = this.state.profiles[profileId];
     if (!p) return;
-    const m = this.state.merge;
-    const di = document.getElementById('mg-date');
-    const checkDate = di ? new Date(di.value) : new Date();
+    const checkDate = (year && month) ? new Date(year, month - 1, 1) : (this.state.merge.checkDate || new Date());
     const py = getCurrentPY(p.birthDay, p.birthMonth, checkDate);
     const pyC = PY_COLORS[py] || PY_COLORS[1];
     const info = YEAR_INFO[py] || { title: `שנה ${py}`, desc: '' };
@@ -2817,6 +2820,7 @@ const App = {
   mgSetDate(val) {
     if (!val) return;
     this.state.merge.checkDate = new Date(val);
+    this.state.merge.scrollX = 0;
     this._mgDraw();
   },
 
