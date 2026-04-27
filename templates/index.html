@@ -913,6 +913,45 @@
       .section-grid.cols-2 { grid-template-columns: 1fr; }
       .detail-hero-nums { display: none; }
     }
+
+    /* ── Merge view ── */
+    .merge-view { height: 100%; display: flex; flex-direction: column; gap: 12px; }
+    .merge-canvas-outer {
+      flex: 1; position: relative; overflow: hidden;
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); min-height: 200px; cursor: grab;
+    }
+    .merge-canvas-outer.dragging { cursor: grabbing; }
+    #mg-canvas { display: block; }
+    .merge-side-panel {
+      position: absolute; top: 0; right: 0; bottom: 0; width: 268px;
+      background: var(--card-bg); border-left: 1.5px solid var(--border);
+      box-shadow: -4px 0 20px rgba(0,0,0,0.08); z-index: 10;
+      padding: 16px 16px 16px 40px; overflow-y: auto; direction: rtl;
+    }
+    .merge-panel-close {
+      position: absolute; top: 10px; left: 10px; width: 26px; height: 26px;
+      border-radius: 6px; border: none; background: var(--app-bg);
+      cursor: pointer; font-size: 13px; color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .merge-panel-close:hover { background: var(--accent); color: #fff; }
+    .merge-panel-py {
+      width: 64px; height: 64px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 800; margin: 12px 0;
+    }
+    .merge-panel-section { margin-top: 14px; }
+    .merge-panel-section h4 {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+    .merge-harmony-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 8px; border-radius: 8px; background: var(--app-bg);
+      margin-bottom: 4px; font-size: 13px;
+    }
+    .merge-harmony-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -944,6 +983,13 @@
           <path d="M12 12 C12 12,18 6,18 12 C18 18,6 18,6 12 C6 6,12 4,15 7"/>
         </svg>
         ספירלה
+      </button>
+      <button class="nav-btn" id="nav-merge" onclick="App.navigate('merge')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="12" r="2"/>
+          <path d="M7 12h3M14 12h3"/>
+        </svg>
+        מיזוג
       </button>
     </nav>
 
@@ -1378,6 +1424,13 @@ const App = {
       cellW:       20,
       searchQuery: '',
     },
+    merge: {
+      activeIds: [],
+      scrollX:   0,
+      cellW:     22,
+      checkDate: new Date(),
+      hovered:   null,
+    },
     spiral: {
       rotX:        -0.55,
       rotY:        0.2,
@@ -1465,6 +1518,7 @@ const App = {
     else if (this.state.view === 'profile')   this.renderProfileDetail(vc);
     else if (this.state.view === 'workspace') this.renderWorkspace(vc);
     else if (this.state.view === 'spiral')    this.renderSpiralView(vc);
+    else if (this.state.view === 'merge')     this.renderMergeView(vc);
   },
 
   // ── Sidebar ───────────────────────────────────────────────
@@ -2389,6 +2443,408 @@ const App = {
     }
     overlay.classList.add('open');
     setTimeout(() => document.getElementById('f-firstName').focus(), 50);
+  },
+
+  // ── Merge View ───────────────────────────────────────────
+  renderMergeView(vc) {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    vc.innerHTML = `<div class="merge-view">
+      <div class="workspace-toolbar">
+        <span class="toolbar-label">פרופילים:</span>
+        <div class="ws-picker-wrap" id="mg-picker-wrap">
+          <button class="ws-picker-btn ${this.state.merge.activeIds.length?'has-selection':''}" id="mg-picker-btn" onclick="App.mgTogglePicker()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            בחרי פרופילים
+            <span class="ws-picker-count">${this.state.merge.activeIds.length?this.state.merge.activeIds.length+' נבחרו':''}</span>
+          </button>
+          <div class="ws-picker-dropdown" id="mg-picker-dd" style="display:none">
+            <div class="ws-picker-search-wrap">
+              <input type="text" class="ws-picker-search" id="mg-search" placeholder="חיפוש..." oninput="App._mgBuildPicker(this.value)">
+            </div>
+            <div class="ws-picker-list" id="mg-picker-list"></div>
+            <div class="ws-picker-footer">
+              <span id="mg-count-lbl"></span>
+              <button class="ws-picker-clear-btn" onclick="App.mgClearAll()">נקה הכל</button>
+            </div>
+          </div>
+        </div>
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-label">תאריך בדיקה:</span>
+        <input type="date" id="mg-date" class="toolbar-input" style="width:150px;direction:ltr" value="${todayStr}" onchange="App.mgSetDate(this.value)">
+        <div class="toolbar-sep"></div>
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="App.mgZoom(-3)">−</button>
+          <span class="zoom-level" id="mg-zoom">חודש</span>
+          <button class="zoom-btn" onclick="App.mgZoom(3)">+</button>
+        </div>
+      </div>
+      <div class="merge-canvas-outer" id="mg-outer">
+        <canvas id="mg-canvas"></canvas>
+        <div id="mg-panel" class="merge-side-panel" style="display:none"></div>
+      </div>
+    </div>`;
+    this._mgBuildPicker('');
+    this._mgInitCanvas();
+  },
+
+  _mgMonthIndex(year, month) { return (year - 2000) * 12 + (month - 1); },
+  _mgMonthFromIndex(idx) {
+    const adj = ((idx % 12) + 12) % 12;
+    return { year: 2000 + Math.floor(idx / 12) + (adj !== idx % 12 ? -1 : 0), month: adj + 1,
+      _year: 2000 + Math.floor(((idx % 12 < 0 ? idx - 11 : idx)) / 12), _m: ((idx % 12) + 12) % 12 + 1 };
+  },
+
+  _mgFromIdx(idx) {
+    const m = ((idx % 12) + 12) % 12;
+    const y = 2000 + Math.floor((idx - m + (m === 0 && idx < 0 ? 12 : 0)) / 12);
+    return { year: 2000 + Math.floor(idx / 12) + (idx < 0 && idx % 12 !== 0 ? 0 : 0), month: ((idx % 12) + 12) % 12 + 1 };
+  },
+
+  _mgInitCanvas() {
+    const outer = document.getElementById('mg-outer');
+    const canvas = document.getElementById('mg-canvas');
+    if (!canvas || !outer) return;
+    const m = this.state.merge;
+    let dragging = false, startX = 0, startScroll = 0, moved = false;
+
+    const resize = () => { canvas.width = outer.clientWidth; canvas.height = outer.clientHeight; this._mgDraw(); };
+
+    canvas.addEventListener('mousedown', e => {
+      dragging = true; moved = false; startX = e.clientX; startScroll = m.scrollX;
+      outer.classList.add('dragging');
+    });
+    canvas.addEventListener('mousemove', e => {
+      if (dragging) {
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 3) moved = true;
+        m.scrollX = startScroll - dx;
+        this._mgDraw();
+      } else {
+        m.hovered = this._mgHitTest(canvas, e.offsetX, e.offsetY);
+        this._mgDraw();
+      }
+    });
+    canvas.addEventListener('mouseup', e => {
+      if (!moved) {
+        const hit = this._mgHitTest(canvas, e.offsetX, e.offsetY);
+        if (hit && hit.profileId) this._mgOpenPanel(hit.profileId);
+      }
+      dragging = false; outer.classList.remove('dragging');
+    });
+    canvas.addEventListener('mouseleave', () => { dragging = false; m.hovered = null; outer.classList.remove('dragging'); this._mgDraw(); });
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      m.cellW = Math.max(6, Math.min(80, m.cellW + (e.deltaY < 0 ? 3 : -3)));
+      const lbl = document.getElementById('mg-zoom');
+      if (lbl) lbl.textContent = m.cellW >= 40 ? 'שבוע' : m.cellW >= 20 ? 'חודש' : 'שנה';
+      this._mgDraw();
+    }, { passive: false });
+
+    if (window._mgResizeObs) window._mgResizeObs.disconnect();
+    window._mgResizeObs = new ResizeObserver(resize);
+    window._mgResizeObs.observe(outer);
+    resize();
+  },
+
+  _mgDraw() {
+    const canvas = document.getElementById('mg-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const m = this.state.merge;
+    const NW=160, YH=22, MH=22, HDR=44, RH=46, PAD=3, MSH=28, MRH=42;
+    const active = m.activeIds.map(id => this.state.profiles[id]).filter(Boolean);
+    const today = new Date();
+    const todayIdx = this._mgMonthIndex(today.getFullYear(), today.getMonth()+1);
+    const visN = Math.ceil((W - NW) / m.cellW) + 4;
+    const halfVis = Math.floor((W - NW) / 2 / m.cellW);
+    const startIdx = todayIdx - halfVis + Math.round(m.scrollX / m.cellW);
+    const pixOff = -(m.scrollX % m.cellW);
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#F4F5F9'; ctx.fillRect(0, 0, W, H);
+
+    if (!active.length) {
+      ctx.fillStyle = '#9CA3AF'; ctx.font = '14px Heebo,Arial'; ctx.textAlign = 'center';
+      ctx.fillText('בחרי פרופילים להצגה', W / 2, H / 2);
+      this._mgDrawNames(ctx, NW, HDR, RH, YH, MH, MSH, MRH, [], undefined);
+      return;
+    }
+
+    const mergeY = HDR + active.length * RH;
+    let lastDrawnYear = null;
+
+    for (let i = 0; i < visN; i++) {
+      const rawIdx = startIdx + i;
+      const mo = ((rawIdx % 12) + 12) % 12;
+      const yr = 2000 + Math.floor((rawIdx - mo) / 12 + (mo > rawIdx % 12 + 12 ? 0 : 0));
+      const year = 2000 + Math.floor(rawIdx / 12) + (rawIdx < 0 && rawIdx % 12 !== 0 ? -1 : 0);
+      const month = ((rawIdx % 12) + 12) % 12 + 1;
+      const x = NW + pixOff + i * m.cellW;
+      if (x + m.cellW < NW || x > W) continue;
+
+      const isTodayCol = year === today.getFullYear() && month === today.getMonth()+1;
+
+      // Year marker
+      if (year !== lastDrawnYear) {
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+        ctx.fillStyle = isTodayCol ? '#5B5EA6' : '#6B7280';
+        ctx.font = 'bold 10px Heebo,Arial'; ctx.textAlign = 'left';
+        ctx.fillText(year, x + 3, YH - 5);
+        lastDrawnYear = year;
+      }
+
+      // Month header
+      ctx.fillStyle = isTodayCol ? '#E8E9F8' : '#F9FAFB';
+      ctx.fillRect(x, YH, m.cellW, MH);
+      if (m.cellW >= 14) {
+        ctx.fillStyle = isTodayCol ? '#5B5EA6' : '#9CA3AF';
+        ctx.font = `${Math.min(10, m.cellW * 0.45)}px Heebo,Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText(month, x + m.cellW / 2, YH + MH - 7);
+      }
+
+      const slotPYs = [];
+      active.forEach((p, ri) => {
+        const ry = HDR + ri * RH;
+        const bornYet = !(year < p.birthYear || (year === p.birthYear && month < p.birthMonth));
+        if (!bornYet) {
+          ctx.save();
+          ctx.beginPath(); this._mgRR(ctx, x+PAD, ry+PAD, m.cellW-PAD*2, RH-PAD*2, 4); ctx.clip();
+          ctx.fillStyle = '#F4F5F9'; ctx.fillRect(x, ry, m.cellW, RH);
+          ctx.strokeStyle = '#E0E0E0'; ctx.lineWidth = 1;
+          for (let h = -RH; h < m.cellW+RH; h += 7) {
+            ctx.beginPath(); ctx.moveTo(x+PAD+h, ry+PAD); ctx.lineTo(x+PAD+h+RH, ry+PAD+RH); ctx.stroke();
+          }
+          ctx.restore(); return;
+        }
+        const slotDate = new Date(year, month-1, 1);
+        const py = getCurrentPY(p.birthDay, p.birthMonth, slotDate);
+        slotPYs.push(py);
+        const pyC = PY_COLORS[py] || PY_COLORS[1];
+        const isHov = m.hovered && m.hovered.profileId === p.id && m.hovered.col === i;
+        ctx.save();
+        ctx.beginPath(); this._mgRR(ctx, x+PAD, ry+PAD, m.cellW-PAD*2, RH-PAD*2, 4);
+        ctx.fillStyle = pyC.bg; ctx.fill();
+        if (isTodayCol || isHov) { ctx.strokeStyle = '#5B5EA6'; ctx.lineWidth = 2; ctx.stroke(); }
+        ctx.restore();
+        if (m.cellW >= 14) {
+          ctx.fillStyle = pyC.text;
+          ctx.font = `bold ${Math.min(15, m.cellW*0.55)}px Heebo,Arial`;
+          ctx.textAlign = 'center';
+          ctx.fillText(py, x + m.cellW/2, ry + RH/2 + 5);
+        }
+      });
+
+      // Merge row
+      if (slotPYs.length > 0) {
+        const score = this._mgHarmony(slotPYs);
+        const pyC = PY_COLORS[slotPYs[0]] || PY_COLORS[1];
+        ctx.save();
+        ctx.beginPath(); this._mgRR(ctx, x+PAD, mergeY+MSH+PAD, m.cellW-PAD*2, MRH-PAD*2, 4);
+        ctx.globalAlpha = score === 2 ? 1 : score === 1 ? 0.45 : 0.14;
+        ctx.fillStyle = score === 0 ? '#CBD5E0' : pyC.bg;
+        ctx.fill(); ctx.globalAlpha = 1; ctx.restore();
+      }
+    }
+
+    // Header line
+    ctx.strokeStyle = '#E5E7EB'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(NW, YH); ctx.lineTo(W, YH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(NW, HDR); ctx.lineTo(W, HDR); ctx.stroke();
+
+    // Merge separator
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(NW, mergeY + MSH/2); ctx.lineTo(W, mergeY + MSH/2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    this._mgDrawNames(ctx, NW, HDR, RH, YH, MH, MSH, MRH, active, mergeY);
+  },
+
+  _mgDrawNames(ctx, NW, HDR, RH, YH, MH, MSH, MRH, profiles, mergeY) {
+    const H = ctx.canvas.height;
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, NW, H);
+    ctx.strokeStyle = '#E5E7EB'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(NW, 0); ctx.lineTo(NW, H); ctx.stroke();
+    ctx.fillStyle = '#F9FAFB'; ctx.fillRect(0, 0, NW, HDR);
+    ctx.strokeStyle = '#E5E7EB'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, YH); ctx.lineTo(NW, YH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, HDR); ctx.lineTo(NW, HDR); ctx.stroke();
+    ctx.fillStyle = '#9CA3AF'; ctx.font = '600 10px Heebo,Arial'; ctx.textAlign = 'right';
+    ctx.fillText('שם', NW - 12, HDR - 8);
+
+    profiles.forEach((p, i) => {
+      const y = HDR + i * RH;
+      const col = avatarColor(p.firstName + p.lastName);
+      ctx.strokeStyle = '#F3F4F6'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, y+RH); ctx.lineTo(NW, y+RH); ctx.stroke();
+      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(22, y+RH/2, 13, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 10px Heebo,Arial'; ctx.textAlign = 'center';
+      ctx.fillText(initials(p.firstName, p.lastName), 22, y+RH/2+4);
+      ctx.fillStyle = '#1A1B2E'; ctx.font = '500 12px Heebo,Arial'; ctx.textAlign = 'right';
+      ctx.fillText((p.firstName+' '+p.lastName).slice(0,14), NW-8, y+RH/2-2);
+      ctx.fillStyle = '#9CA3AF'; ctx.font = '10px Heebo,Arial';
+      ctx.fillText(`${p.birthDay}/${p.birthMonth}/${p.birthYear}`, NW-8, y+RH/2+11);
+    });
+
+    if (mergeY !== undefined) {
+      ctx.fillStyle = '#F9FAFB'; ctx.fillRect(0, mergeY, NW, MSH+MRH+8);
+      ctx.strokeStyle = '#E5E7EB'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, mergeY+MSH/2); ctx.lineTo(NW, mergeY+MSH/2); ctx.stroke();
+      ctx.fillStyle = '#5B5EA6'; ctx.font = 'bold 12px Heebo,Arial'; ctx.textAlign = 'right';
+      ctx.fillText('⊕ מיזוג', NW-10, mergeY+MSH+MRH/2+5);
+    }
+  },
+
+  _mgRR(ctx, x, y, w, h, r) {
+    ctx.moveTo(x+r, y);
+    ctx.lineTo(x+w-r, y); ctx.arcTo(x+w, y, x+w, y+r, r);
+    ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+    ctx.lineTo(x+r, y+h); ctx.arcTo(x, y+h, x, y+h-r, r);
+    ctx.lineTo(x, y+r); ctx.arcTo(x, y, x+r, y, r); ctx.closePath();
+  },
+
+  _mgHarmony(pys) {
+    if (pys.length < 2) return 0;
+    const n = v => v===11?2:v===22?4:v===33?6:v;
+    const ns = pys.map(n);
+    if (ns.every(v => v === ns[0])) return 2;
+    const G = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]];
+    let ok=0, tot=0;
+    for (let i=0;i<ns.length;i++) for (let j=i+1;j<ns.length;j++) { tot++; if (G.some(g=>g.includes(ns[i])&&g.includes(ns[j]))) ok++; }
+    return ok/tot >= 0.5 ? 1 : 0;
+  },
+
+  _mgHitTest(canvas, mx, my) {
+    const m = this.state.merge;
+    const NW=160, HDR=44, RH=46, MSH=28, MRH=42;
+    if (mx < NW) return null;
+    const active = m.activeIds.map(id => this.state.profiles[id]).filter(Boolean);
+    const today = new Date();
+    const todayIdx = this._mgMonthIndex(today.getFullYear(), today.getMonth()+1);
+    const halfVis = Math.floor((canvas.width - NW) / 2 / m.cellW);
+    const startIdx = todayIdx - halfVis + Math.round(m.scrollX / m.cellW);
+    const pixOff = -(m.scrollX % m.cellW);
+    const col = Math.floor((mx - NW - pixOff) / m.cellW);
+    const rawIdx = startIdx + col;
+    const month = ((rawIdx % 12) + 12) % 12 + 1;
+    const year = 2000 + Math.floor(rawIdx / 12) + (rawIdx < 0 && rawIdx % 12 !== 0 ? -1 : 0);
+    for (let ri=0; ri<active.length; ri++) {
+      const ry = HDR + ri * RH;
+      if (my >= ry && my < ry+RH) return { profileId: active[ri].id, col, year, month };
+    }
+    const mergeY = HDR + active.length * RH;
+    if (my >= mergeY+MSH && my < mergeY+MSH+MRH) return { isMerge: true, col, year, month };
+    return null;
+  },
+
+  _mgOpenPanel(profileId) {
+    const panel = document.getElementById('mg-panel');
+    if (!panel) return;
+    const p = this.state.profiles[profileId];
+    if (!p) return;
+    const m = this.state.merge;
+    const di = document.getElementById('mg-date');
+    const checkDate = di ? new Date(di.value) : new Date();
+    const py = getCurrentPY(p.birthDay, p.birthMonth, checkDate);
+    const pm = calcPersonalMonth(py, checkDate.getMonth()+1);
+    const pyC = PY_COLORS[py] || PY_COLORS[1];
+    const color = avatarColor(p.firstName + p.lastName);
+    let bday = new Date(checkDate.getFullYear(), p.birthMonth-1, p.birthDay);
+    if (bday <= checkDate) bday.setFullYear(bday.getFullYear()+1);
+    const daysLeft = Math.ceil((bday - checkDate) / 86400000);
+    const active = m.activeIds.map(id => this.state.profiles[id]).filter(Boolean);
+    const G = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]];
+    const harmRows = active.filter(op => op.id !== profileId).map(op => {
+      const opPY = getCurrentPY(op.birthDay, op.birthMonth, checkDate);
+      const sc = this._mgHarmony([py, opPY]);
+      const opC = PY_COLORS[opPY] || PY_COLORS[1];
+      const stars = sc===2?'●●●':sc===1?'●●○':'●○○';
+      return `<div class="merge-harmony-item">
+        <div class="merge-harmony-dot" style="background:${opC.bg}"></div>
+        <span style="flex:1">${op.firstName} ${op.lastName}</span>
+        <span style="font-size:11px;color:${sc>0?'#5B5EA6':'#9CA3AF'}">${stars} שנה ${opPY}</span>
+      </div>`;
+    }).join('') || '<div style="font-size:12px;color:#9CA3AF;padding:4px">אין פרופילים נוספים</div>';
+
+    panel.style.display = 'block';
+    panel.innerHTML = `<button class="merge-panel-close" onclick="document.getElementById('mg-panel').style.display='none'">✕</button>
+      <div style="display:flex;align-items:center;gap:10px;padding-top:4px">
+        <div style="width:40px;height:40px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:14px">${initials(p.firstName, p.lastName)}</div>
+        <div><div style="font-weight:700;font-size:15px">${p.firstName} ${p.lastName}</div>
+        <div style="font-size:11px;color:#9CA3AF">${p.birthDay}/${p.birthMonth}/${p.birthYear}</div></div>
+      </div>
+      <div class="merge-panel-py" style="background:${pyC.bg};color:${pyC.text}">${py}</div>
+      <div style="font-size:12px;color:#6B7280">שנה אישית — ${checkDate.toLocaleDateString('he-IL')}</div>
+      <div style="font-size:12px;color:#6B7280;margin-top:4px">חודש אישי: <strong>${pm}</strong></div>
+      <div style="font-size:12px;color:#9CA3AF;margin-top:4px">⏱ עוד ${daysLeft} ימים לשנה הבאה</div>
+      <div class="merge-panel-section"><h4>הרמוניה עם פרופילים אחרים</h4>${harmRows}</div>`;
+  },
+
+  mgTogglePicker() {
+    const dd = document.getElementById('mg-picker-dd');
+    if (!dd) return;
+    const open = dd.style.display !== 'none';
+    dd.style.display = open ? 'none' : 'flex';
+    if (!open) dd.style.flexDirection = 'column';
+  },
+
+  _mgBuildPicker(query) {
+    const list = document.getElementById('mg-picker-list');
+    const lbl = document.getElementById('mg-count-lbl');
+    if (!list) return;
+    const m = this.state.merge;
+    const profiles = Object.values(this.state.profiles)
+      .filter(p => !query || (p.firstName+p.lastName).toLowerCase().includes(query.toLowerCase()));
+    list.innerHTML = profiles.map(p => {
+      const sel = m.activeIds.includes(p.id);
+      const col = avatarColor(p.firstName+p.lastName);
+      const dis = !sel && m.activeIds.length >= 10;
+      return `<div class="ws-picker-item ${sel?'selected':''} ${dis?'disabled':''}" onclick="${dis?'':'App._mgToggle(\''+p.id+'\')'}">
+        <input type="checkbox" ${sel?'checked':''} ${dis?'disabled':''} style="pointer-events:none">
+        <div style="width:18px;height:18px;border-radius:50%;background:${col};flex-shrink:0"></div>
+        <span class="ws-picker-item-name">${p.firstName} ${p.lastName}</span>
+      </div>`;
+    }).join('');
+    if (lbl) lbl.textContent = `${profiles.length} פרופילים`;
+  },
+
+  _mgToggle(id) {
+    const m = this.state.merge;
+    const idx = m.activeIds.indexOf(id);
+    if (idx >= 0) m.activeIds.splice(idx, 1);
+    else if (m.activeIds.length < 10) m.activeIds.push(id);
+    this._mgBuildPicker(document.getElementById('mg-search')?.value || '');
+    const btn = document.getElementById('mg-picker-btn');
+    if (btn) {
+      btn.className = `ws-picker-btn ${m.activeIds.length?'has-selection':''}`;
+      btn.querySelector('.ws-picker-count').textContent = m.activeIds.length ? m.activeIds.length+' נבחרו' : '';
+    }
+    this._mgDraw();
+  },
+
+  mgClearAll() {
+    this.state.merge.activeIds = [];
+    this._mgBuildPicker('');
+    const btn = document.getElementById('mg-picker-btn');
+    if (btn) { btn.className = 'ws-picker-btn'; btn.querySelector('.ws-picker-count').textContent = ''; }
+    this._mgDraw();
+  },
+
+  mgSetDate(val) {
+    if (!val) return;
+    this.state.merge.checkDate = new Date(val);
+    this._mgDraw();
+  },
+
+  mgZoom(delta) {
+    const m = this.state.merge;
+    m.cellW = Math.max(6, Math.min(80, m.cellW + delta));
+    const lbl = document.getElementById('mg-zoom');
+    if (lbl) lbl.textContent = m.cellW >= 40 ? 'שבוע' : m.cellW >= 20 ? 'חודש' : 'שנה';
+    this._mgDraw();
   },
 
   closeModal() {
