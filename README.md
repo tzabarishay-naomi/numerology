@@ -1,6 +1,6 @@
 # Kabbalistic Numerology App
 
-> A fully self-contained, offline-first Hebrew numerology calculator based on **Kabbalistic** (not Pythagorean) principles. Single HTML file — no server, no build step, no dependencies.
+> A Hebrew numerology calculator based on **Kabbalistic** (not Pythagorean) principles. Flask backend + single-file frontend, deployed on Railway, accessible from any device.
 
 ---
 
@@ -21,25 +21,30 @@
    - [Dashboard](#dashboard)
    - [Profile Detail](#profile-detail)
    - [Timeline Workspace](#timeline-workspace)
+   - [Merge Timeline](#merge-timeline)
    - [3D Spiral](#3d-spiral)
-7. [Hebrew Gematria Table](#hebrew-gematria-table)
-8. [Master Numbers](#master-numbers)
-9. [Number Meanings Reference](#number-meanings-reference)
-10. [Roadmap](#roadmap)
-11. [Tech Stack](#tech-stack)
+7. [Personal Year Color System](#personal-year-color-system)
+8. [Merge Harmony Rules](#merge-harmony-rules)
+9. [Hebrew Gematria Table](#hebrew-gematria-table)
+10. [Master Numbers](#master-numbers)
+11. [Number Meanings Reference](#number-meanings-reference)
+12. [Roadmap](#roadmap)
+13. [Tech Stack](#tech-stack)
 
 ---
 
 ## Overview
 
-This application provides a complete **Kabbalistic numerology** reading for any person based on their date of birth and Hebrew first name. It calculates all core numerological indicators, displays them in an elegant RTL Hebrew interface, and lets practitioners manage multiple client profiles from a single dashboard.
+This application provides a complete **Kabbalistic numerology** reading for any person based on their date of birth and Hebrew first name. It calculates all core numerological indicators, displays them in an RTL Hebrew interface, and lets practitioners manage multiple client profiles from a single dashboard.
 
 **Key principles:**
 - Kabbalistic system only (not Pythagorean)
 - Master numbers `11`, `22`, `33` are **never reduced** in fate-path calculations
 - Hebrew gematria for name values (final letters = same value as regular form)
-- Fully offline — data stored in `localStorage`
-- Zero external dependencies (no React, no Vue, no jQuery)
+- Data stored in `localStorage` (Supabase migration planned)
+- Zero frontend dependencies (no React, no Vue, no jQuery)
+
+**Live URL:** `https://abundant-beauty-production-4999.up.railway.app`
 
 ---
 
@@ -47,36 +52,33 @@ This application provides a complete **Kabbalistic numerology** reading for any 
 
 ```mermaid
 graph TD
-    A[Single HTML File<br/>templates/index.html] --> B[Embedded CSS<br/>RTL · Heebo Font · CSS Variables]
+    A[templates/index.html<br/>Frontend] --> B[Embedded CSS<br/>RTL · Heebo · CSS Variables]
     A --> C[Embedded JavaScript<br/>Vanilla ES6+]
     A --> D[localStorage<br/>key: kab_profiles]
 
+    F[app.py<br/>Flask Backend] --> A
+    F --> G[data/profiles.json<br/>Server-side storage]
+
     C --> E[Calculation Engine]
-    C --> F[UI / View Layer]
-    C --> G[State Management]
+    C --> UI[UI / View Layer]
+    C --> S[State Management]
 
-    E --> E1[reduceNumber]
-    E --> E2[reduceYear]
-    E --> E3[calcLifePath]
-    E --> E4[calcPeaks]
-    E --> E5[calcChallenges]
-    E --> E6[calcPYForBirthdayYear]
-    E --> E7[getCurrentPY]
-    E --> E8[calcPersonalMonth]
-    E --> E9[calcNameValue / Gematria]
-    E --> E10[checkHarmony]
-    E --> E11[getExistingMissing]
+    E --> E1[reduceNumber / reducePY]
+    E --> E2[calcLifePath]
+    E --> E3[calcPeaks / calcChallenges]
+    E --> E4[getCurrentPY — day-precise]
+    E --> E5[calcPersonalMonth]
+    E --> E6[calcNameValue / Gematria]
+    E --> E7[checkHarmony]
+    E --> E8[getExistingMissing]
 
-    F --> F1[Dashboard View]
-    F --> F2[Profile Detail View]
-    F --> F3[Timeline Workspace]
-    F --> F4[3D Spiral Canvas]
+    UI --> V1[Dashboard]
+    UI --> V2[Profile Detail]
+    UI --> V3[Timeline Workspace]
+    UI --> V4[Merge Timeline Canvas]
+    UI --> V5[3D Spiral Canvas]
 
-    G --> G1[profiles array]
-    G --> G2[activeProfileId]
-    G --> G3[currentView]
-
-    D <-->|load / save| G1
+    GH[GitHub<br/>tzabarishay-naomi/numerology] --> RW[Railway<br/>Auto-deploy on push]
 ```
 
 ---
@@ -87,54 +89,45 @@ graph TD
 mindmap
   root((Kabbalistic<br/>Numerology))
     Profile Management
-      Create Profile
-      Edit Profile
-      Delete Profile
-      Avatar with Color
+      Create / Edit / Delete
+      Avatar with deterministic color
+      Up to unlimited profiles
     Core Numbers
       Life Path שביל גורל
-      Day Number
-      Month Number
-      Year Number
+      Day / Month / Year reduced
       Name Value גימטריה
       First Name Value
     Cycles
       Personal Year שנה אישית
       Personal Month חודש אישי
-      9-Year Cycle Tracking
+      Day-precise PY transitions
     Peaks & Challenges
-      Peak 1–4
+      Peak 1–4 with age ranges
       Challenge 1–4
-      Current Peak Highlight
-      Age Ranges
+      Current period highlight
+      Age table by Life Path
     Number Analysis
       Existing Numbers 1–9
       Missing Numbers 1–9
-      Group Strengths
-      Group Weaknesses
-    Harmony Analysis
-      Day · Life Path · First Name
-      Harmony Groups
-      Status Indicator
+      Group Strengths / Weaknesses
     Timeline Workspace
-      Yearly Timeline
       Monthly Timeline
-      Multi-Profile Compare
-      Drag to Scroll
-      Zoom In/Out
-      Birth-Month Marker
+      Multi-Profile Compare up to 10
+      Drag · Zoom · Birth-Month Marker
+    Merge Timeline
+      Stacked profile rows Canvas
+      Date picker day-precise
+      Drag to scroll · Zoom
+      Harmony rules 4/7 and 6/2
+      Click cell = PY energy panel
     3D Spiral
       Canvas 2D + Perspective
       Painter's Algorithm
-      Drag to Rotate
-      Ctrl+Drag to Pan
-      Scroll to Zoom
-      Presets top · perspective · side
+      Drag Rotate · Pan · Zoom
     Meanings & Guidance
       Number Meanings 1–9 + Masters
       Career Paths
       Personal Year Descriptions
-      Group Trait Descriptions
 ```
 
 ---
@@ -146,7 +139,7 @@ mindmap
 | Function | Behaviour |
 |---|---|
 | `reduceNumber(n)` | Sum digits repeatedly until single digit **or** master (11 / 22 / 33) |
-| `reducePY(n)` | Sum digits repeatedly until **1–9 only** (masters are reduced) |
+| `reducePY(n)` | Sum digits repeatedly until **1–9 only** (masters reduced) |
 | `reduceYear(year)` | Sum 4 digits → `reduceNumber` |
 
 ### Life Path
@@ -182,6 +175,9 @@ getCurrentPY(birthDay, birthMonth, checkDate):
 PersonalMonth = reducePY(personalYear + currentCalendarMonth)
 ```
 
+> **Day precision:** PY transitions happen on the exact birthday, not January 1st.
+> Two people can be in different Personal Years on the same calendar date.
+
 ### Peaks & Challenges
 
 ```mermaid
@@ -199,14 +195,19 @@ flowchart LR
     M & Y --> C4[Challenge 4<br/>|m−y|]
 ```
 
-**Peak age ranges** — start age `s = 27 − LP` (masters: 11→2, 22→4, 33→6):
+**Peak age ranges by Life Path:**
 
-| Period | Age Range |
-|---|---|
-| Peak 1 | s … s+8 |
-| Peak 2 | s+9 … s+17 |
-| Peak 3 | s+18 … s+26 |
-| Peak 4 | s+27 … s+35 |
+| LP | Peak 1 | Peak 2 | Peak 3 | Peak 4 |
+|---|---|---|---|---|
+| 1 | 27–35 | 36–44 | 45–53 | 54–62 |
+| 2 | 26–34 | 35–43 | 44–52 | 53–61 |
+| 3 | 25–33 | 34–42 | 43–51 | 52–60 |
+| 4 | 24–32 | 33–41 | 42–50 | 51–59 |
+| 5 | 23–31 | 32–40 | 41–49 | 50–58 |
+| 6 | 22–30 | 31–39 | 40–48 | 49–57 |
+| 7 | 21–29 | 30–38 | 39–47 | 48–56 |
+| 8 | 20–28 | 29–37 | 38–46 | 47–55 |
+| 9 | 19–27 | 28–36 | 37–45 | 46–54 |
 
 ### Existing & Missing Numbers
 
@@ -230,13 +231,11 @@ Groups (both existing-strengths and missing-weaknesses):
 
 ### Name–Date Harmony
 
-Three numbers are compared: `dayNum`, `lifePathNum`, `firstNameValue`.
+Three numbers compared: `dayNum`, `lifePathNum`, `firstNameValue`.
 
-Master normalisation for grouping: `11→2, 22→4, 33→6`.
+Master normalisation: `11→2, 22→4, 33→6`.
 
-Harmony condition:
-1. At least **2 of the 3** numbers share a harmony group, **and**
-2. The third number's difference from each of the two shared numbers is **≤ 2**
+Condition: at least 2 of 3 share a harmony group **and** the third differs by ≤ 2 from each.
 
 ---
 
@@ -259,15 +258,11 @@ sequenceDiagram
     S->>LS: save kab_profiles
     S-->>UI: re-render sidebar + dashboard
 
-    U->>UI: Click profile
-    UI->>S: setActiveProfile(id)
-    S-->>UI: render Profile Detail
-    Note over UI: calcFullProfile() runs on every render
-
-    U->>UI: Open Workspace
-    UI->>S: read all profiles
-    S-->>UI: buildPYTimeline / buildMonthlyTimeline
-    Note over UI: Painter's sort for 3D spiral
+    U->>UI: Open Merge Timeline
+    UI->>S: read activeIds + checkDate
+    S-->>UI: Canvas draw — day-precise PY per profile
+    Note over UI: getCurrentPY(birthDay, birthMonth, cellDate)
+    Note over UI: Harmony rules applied per month slot
 ```
 
 ---
@@ -278,7 +273,7 @@ sequenceDiagram
 
 Grid of profile cards, each showing:
 - Avatar (initials + deterministic colour)
-- Life Path, Day Number, Personal Year badge
+- Life Path, Personal Year badge
 - Hover → edit / delete actions
 
 ### Profile Detail
@@ -286,22 +281,30 @@ Grid of profile cards, each showing:
 Full reading for one person:
 - Hero bar: Life Path, Personal Year, Personal Month
 - Core numbers: day / month / year (raw + reduced)
-- Peaks & Challenges pairs with current-period highlight
+- Peaks & Challenges pairs with current-period highlight and age ranges
 - Existing / missing numbers chips
-- Harmony status
 - Number meaning, career path, personal year description
 
 ### Timeline Workspace
 
-Horizontal scrollable table — one row per person, one column per year (or month).
+Horizontal scrollable table — one row per person, one column per month.
 
 - Each cell = colour-coded Personal Year block
 - Pre-birth cells shown as hatched pattern
-- Current year highlighted with ring
-- Zoom controls (cell width)
-- Drag-to-scroll
-- Profile picker (multi-select, up to 8)
-- Toggle yearly ↔ monthly view
+- Current month highlighted with ring
+- Zoom controls, drag-to-scroll
+- Profile picker (multi-select, up to 10)
+
+### Merge Timeline
+
+Canvas-based stacked visualization for multi-profile energy comparison.
+
+- One row per selected profile (up to 10)
+- **Date picker** — centers the timeline on any chosen date; PY calculated at day-level precision
+- **Drag** to scroll through time, **scroll wheel** to zoom
+- **Click any cell** → side panel shows the energy and meaning of that Personal Year
+- **Merge row** at the bottom — marks harmony/conflict combinations (see rules below)
+- Pre-birth slots rendered as diagonal hatch
 
 ### 3D Spiral
 
@@ -318,6 +321,46 @@ z = r · sin(angle)
 - Ctrl + drag → pan
 - Scroll wheel → zoom
 - Preset views: `top`, `perspective`, `side`
+
+---
+
+## Personal Year Color System
+
+| PY | Color | Hex |
+|---|---|---|
+| 1 | Red | `#C0392B` |
+| 2 | Purple | `#7D3C98` |
+| 3 | Green | `#1E8449` |
+| 4 | Red | `#C0392B` |
+| 5 | Blue | `#1A5276` |
+| 6 | Purple | `#7D3C98` |
+| 7 | Gold | `#D4AC0D` |
+| 8 | Red | `#C0392B` |
+| 9 | Gold | `#D4AC0D` |
+| 11 | Deep Purple | `#6C3483` |
+| 22 | Deep Gold | `#B7950B` |
+| 33 | Deep Purple | `#6C3483` |
+
+**Color groups:**
+- **Red** (1, 4, 8) — action, power, intensity
+- **Purple** (2, 6) — emotion, relationships, intuition
+- **Green** (3) — creativity, expression
+- **Blue** (5) — freedom, movement
+- **Gold** (7, 9) — spirituality, wisdom, completion
+
+---
+
+## Merge Harmony Rules
+
+Applied per month slot in the Merge Timeline. Checks the Personal Years of all active profiles on the 1st of each month.
+
+| Combination | Symbol | Color | Meaning |
+|---|---|---|---|
+| PY 4 + PY 7 | **!** | Red `#C0392B` | Danger — risk of rupture, fertility/livelihood/health issues. Can be resolved with a new ketubah. |
+| PY 6 + PY 2 | **♥** | Purple `#7D3C98` | Harmony — good couple dynamics, emotional alignment. |
+| All others | _(blank)_ | — | No special marking. |
+
+> Master number normalisation applies: 11→2, 22→4, 33→6 before checking rules.
 
 ---
 
@@ -352,7 +395,7 @@ z = r · sin(angle)
 | 33 | preserved | Life path, peaks, challenges |
 | 11/22/33 | 2 / 4 / 6 | Personal Year, Personal Month (`reducePY`) |
 | 11/22/33 | 2 / 4 / 6 | Harmony group normalisation |
-| 11/22/33 | 2 / 4 / 6 | Peak age calculation |
+| 11/22/33 | 2 / 4 / 6 | Merge harmony rule normalisation |
 
 ---
 
@@ -377,13 +420,19 @@ z = r · sin(angle)
 
 ## Roadmap
 
-- [ ] Supabase backend — user accounts, cloud profiles
-- [ ] Vercel deployment — accessible from any device
+- [x] Railway deployment — accessible from any device
+- [x] GitHub repository connected
+- [x] Merge Timeline — Canvas-based, day-precise
+- [x] Harmony rules — 4/7 danger, 6/2 harmony
+- [x] Personal Year color system defined
+- [ ] Supabase — user accounts, cloud profiles
+- [ ] Login / authentication
 - [ ] Mobile-responsive layout
 - [ ] PWA — "Add to Home Screen" on iPhone
+- [ ] Peaks age ranges displayed in profile detail
+- [ ] Additional merge harmony rules
 - [ ] PDF export of full reading
-- [ ] Compatibility report between two profiles
-- [ ] Notifications for Personal Year transitions
+- [ ] RAG knowledge base with pgvector
 
 ---
 
@@ -391,11 +440,12 @@ z = r · sin(angle)
 
 | Layer | Technology |
 |---|---|
-| Markup | HTML5 |
-| Styling | Vanilla CSS (custom properties, CSS Grid, Flexbox) |
-| Logic | Vanilla JavaScript ES6+ |
+| Frontend | HTML5 + Vanilla CSS + Vanilla JS ES6+ |
 | Font | Heebo (Google Fonts) |
 | Graphics | HTML5 Canvas 2D |
-| Storage | localStorage (`kab_profiles`) |
-| Hosting (planned) | Vercel |
-| Backend (planned) | Supabase (Auth + PostgreSQL) |
+| Backend | Python / Flask |
+| Storage (current) | localStorage + `data/profiles.json` |
+| Storage (planned) | Supabase PostgreSQL + pgvector |
+| Auth (planned) | Supabase Auth |
+| Hosting | Railway |
+| Repository | GitHub — `tzabarishay-naomi/numerology` |
