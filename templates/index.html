@@ -2638,19 +2638,20 @@ const App = {
         }
       });
 
-      // Merge row — מסמן רק סכנת 4/7
+      // Merge row
       if (slotPYs.length > 0) {
         const score = this._mgHarmony(slotPYs);
-        if (score === -1) {
+        if (score !== 0) {
+          const isGood = score === 1;
           ctx.save();
           ctx.beginPath(); this._mgRR(ctx, x+PAD, mergeY+MSH+PAD, m.cellW-PAD*2, MRH-PAD*2, 4);
-          ctx.fillStyle = '#C0392B'; ctx.globalAlpha = 0.88; ctx.fill();
-          ctx.globalAlpha = 1;
+          ctx.fillStyle = isGood ? '#7D3C98' : '#C0392B';
+          ctx.globalAlpha = 0.88; ctx.fill(); ctx.globalAlpha = 1;
           if (m.cellW >= 14) {
             ctx.fillStyle = '#fff';
             ctx.font = `bold ${Math.min(13, m.cellW*0.55)}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('!', x + m.cellW/2, mergeY+MSH+MRH/2+5);
+            ctx.fillText(isGood ? '♥' : '!', x + m.cellW/2, mergeY+MSH+MRH/2+5);
           }
           ctx.restore();
         }
@@ -2717,8 +2718,8 @@ const App = {
     if (pys.length < 2) return 0;
     const n = v => v===11?2:v===22?4:v===33?6:v;
     const ns = pys.map(n);
-    // כלל: שנה 4 + שנה 7 = סכנה
-    if (ns.includes(4) && ns.includes(7)) return -1;
+    if (ns.includes(4) && ns.includes(7)) return -1; // סכנה
+    if (ns.includes(6) && ns.includes(2)) return  1; // הרמוניה זוגית
     return 0;
   },
 
