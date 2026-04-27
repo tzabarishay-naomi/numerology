@@ -2749,38 +2749,19 @@ const App = {
     const di = document.getElementById('mg-date');
     const checkDate = di ? new Date(di.value) : new Date();
     const py = getCurrentPY(p.birthDay, p.birthMonth, checkDate);
-    const pm = calcPersonalMonth(py, checkDate.getMonth()+1);
     const pyC = PY_COLORS[py] || PY_COLORS[1];
-    const color = avatarColor(p.firstName + p.lastName);
-    let bday = new Date(checkDate.getFullYear(), p.birthMonth-1, p.birthDay);
-    if (bday <= checkDate) bday.setFullYear(bday.getFullYear()+1);
-    const daysLeft = Math.ceil((bday - checkDate) / 86400000);
-    const active = m.activeIds.map(id => this.state.profiles[id]).filter(Boolean);
-    const G = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]];
-    const harmRows = active.filter(op => op.id !== profileId).map(op => {
-      const opPY = getCurrentPY(op.birthDay, op.birthMonth, checkDate);
-      const sc = this._mgHarmony([py, opPY]);
-      const opC = PY_COLORS[opPY] || PY_COLORS[1];
-      const stars = sc===2?'●●●':sc===1?'●●○':'●○○';
-      return `<div class="merge-harmony-item">
-        <div class="merge-harmony-dot" style="background:${opC.bg}"></div>
-        <span style="flex:1">${op.firstName} ${op.lastName}</span>
-        <span style="font-size:11px;color:${sc>0?'#5B5EA6':'#9CA3AF'}">${stars} שנה ${opPY}</span>
-      </div>`;
-    }).join('') || '<div style="font-size:12px;color:#9CA3AF;padding:4px">אין פרופילים נוספים</div>';
+    const info = YEAR_INFO[py] || { title: `שנה ${py}`, desc: '' };
+    const numMeaning = NUMBER_MEANINGS[py] || '';
 
     panel.style.display = 'block';
     panel.innerHTML = `<button class="merge-panel-close" onclick="document.getElementById('mg-panel').style.display='none'">✕</button>
-      <div style="display:flex;align-items:center;gap:10px;padding-top:4px">
-        <div style="width:40px;height:40px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:14px">${initials(p.firstName, p.lastName)}</div>
-        <div><div style="font-weight:700;font-size:15px">${p.firstName} ${p.lastName}</div>
-        <div style="font-size:11px;color:#9CA3AF">${p.birthDay}/${p.birthMonth}/${p.birthYear}</div></div>
-      </div>
       <div class="merge-panel-py" style="background:${pyC.bg};color:${pyC.text}">${py}</div>
-      <div style="font-size:12px;color:#6B7280">שנה אישית — ${checkDate.toLocaleDateString('he-IL')}</div>
-      <div style="font-size:12px;color:#6B7280;margin-top:4px">חודש אישי: <strong>${pm}</strong></div>
-      <div style="font-size:12px;color:#9CA3AF;margin-top:4px">⏱ עוד ${daysLeft} ימים לשנה הבאה</div>
-      <div class="merge-panel-section"><h4>הרמוניה עם פרופילים אחרים</h4>${harmRows}</div>`;
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px">${info.title}</div>
+      <div style="font-size:13px;color:#374151;line-height:1.6;margin-bottom:12px">${info.desc}</div>
+      <div class="merge-panel-section">
+        <h4>אנרגיית המספר</h4>
+        <div style="font-size:13px;color:#374151;line-height:1.7">${numMeaning}</div>
+      </div>`;
   },
 
   mgTogglePicker() {
